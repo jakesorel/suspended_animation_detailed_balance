@@ -177,8 +177,8 @@ if __name__ == "__main__":
             file.write(out)
             file.close()
 
-    Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
-    # run_simulations(5)
+    # Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
+    run_simulations(5)
 
     """
     To do: 
