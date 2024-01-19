@@ -160,7 +160,6 @@ if __name__ == "__main__":
 
         for t, ti in zip(time_points,time_steps):
             file_path = "../scan_results/raw_tchosen/%d/"%t + str(i) + '.h5'
-            print(t,ti)
             f = h5py.File(file_path, 'w')
             for key in raw_dict.keys():
                 f.create_dataset(key, data=raw_dict[key][:,:,ti], compression="gzip")
@@ -181,8 +180,8 @@ if __name__ == "__main__":
             file.write(out)
             file.close()
 
-    # Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
-    run_simulations(5)
+    Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
+    # run_simulations(5)
 
     """
     To do: 
