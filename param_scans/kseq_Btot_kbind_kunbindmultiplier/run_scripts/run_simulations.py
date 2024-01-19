@@ -4,6 +4,10 @@ sys.dont_write_bytecode = True
 
 SCRIPT_DIR = "../../.."
 sys.path.append(os.path.dirname(SCRIPT_DIR))
+SCRIPT_DIR = "../../../.."
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+SCRIPT_DIR = "../.."
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 
 from cluster_model.cluster_model import Simulate
