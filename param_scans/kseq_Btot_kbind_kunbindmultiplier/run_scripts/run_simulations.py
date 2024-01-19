@@ -175,7 +175,7 @@ if __name__ == "__main__":
         df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
 
         for j in range(len(df_chosen_times)):
-            out = ",".join(df_chosen_times.iloc[i].values.astype(str)) + "\n"
+            out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
             file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points[j],i),"w+")
             file.write(out)
             file.close()
