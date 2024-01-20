@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
         for j in range(len(df_chosen_times)):
             out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
-            file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points[j],i),"w+")
+            file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
             file.write(out)
             file.close()
 
