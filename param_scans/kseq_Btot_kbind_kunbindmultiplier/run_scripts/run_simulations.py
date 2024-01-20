@@ -38,7 +38,10 @@ from joblib.externals.loky.process_executor import TerminatedWorkerError
 
 def mkdir(path):
     if not os.path.exists(path):
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
+        except:
+            print("Presuming path exists")
 
 
 if __name__ == "__main__":
