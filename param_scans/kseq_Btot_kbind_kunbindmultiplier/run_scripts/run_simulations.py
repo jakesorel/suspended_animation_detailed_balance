@@ -102,7 +102,11 @@ if __name__ == "__main__":
     time_points = np.array(
         [0, 10, 60, 60 * 10, 60 * 60, 2 * 60 * 60, 4 * 60 * 60, 8 * 60 * 60, 16 * 60 * 60, 24 * 60 * 60,
          24 * 60 * 60 * 2, 24 * 60 * 60 * 3])
-
+    time_points_to_interpolate = np.array([0,60,10*60,100*60,1000*60,24 * 60 * 60 * 3])
+    time_points_interpolated = np.row_stack([np.arange(t1,t2,int((t2-t1)/60)) for t1,t2 in zip(time_points_to_interpolate[:-1],time_points_to_interpolate[1:]) ]).ravel()
+    time_points_interpolated = np.concatenate((time_points_interpolated,(time_points_to_interpolate[-1],)))
+    time_steps_interpolated = np.unique((np.round(time_points_interpolated / t_eval_dict["anoxia"]["dt"])).astype(int))
+    time_points_interpolated = sim.t_evals["anoxia"][time_steps_interpolated]
     mkdir("../scan_results/raw")
     mkdir("../scan_results/raw_tchosen")
     mkdir("../scan_results/summary")
@@ -141,16 +145,15 @@ if __name__ == "__main__":
         non_spatial_outputs = 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
         df = pd.DataFrame(np.row_stack([np.expand_dims(np.ones_like(sim_values_anoxia["C_pol"]),0)*np.expand_dims(np.array((i,_param_dict["k_seq"],_param_dict["B_tot"],_param_dict["kbind"],_anoxia_dict["kunbind_multiplier"])),1)]+[sim.t_evals["anoxia"]]+[sim_values_anoxia[key] for key in keys]).astype(np.float32).T)
         df.columns = columns
-        df_chosen_times = df.iloc[time_steps]
+        df_chosen_times = df.iloc[time_steps_interpolated]
 
 
         # #This takes up too much space
-        # file_path = "../scan_results/raw/" + str(i) + '.h5'
+        file_path = "../scan_results/raw/" + str(i) + '.h5'
         #
-        # f = h5py.File(file_path, 'w')
-        # for i, key in enumerate(raw_dict.keys()):
-        #     f.create_dataset(key, data=raw_dict[key].reshape(-1,raw_dict[key].shape[-1]), compression="gzip")
-        # f.close()
+        f = h5py.File(file_path, 'w')
+        f.create_dataset("data", data=df.values, compression="gzip")
+        f.close()
         #
         # with open(file_path, 'rb') as f_in:
         #     with gzip.open(file_path + ".gz", 'wb') as f_out:
@@ -158,7 +161,7 @@ if __name__ == "__main__":
         #
         # os.remove(file_path)
 
-        for t, ti in zip(time_points,time_steps):
+        for t, ti in zip(time_points_interpolated,time_steps_interpolated):
             file_path = "../scan_results/raw_tchosen/%d/"%t + str(i) + '.h5'
             f = h5py.File(file_path, 'w')
             for key in raw_dict.keys():
@@ -171,7 +174,7 @@ if __name__ == "__main__":
 
             os.remove(file_path)
 
-        df.to_csv("../scan_results/summary/%d.csv"%i)
+        # df.to_csv("../scan_results/summary/%d.csv"%i)
         df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
 
         for j in range(len(df_chosen_times)):
