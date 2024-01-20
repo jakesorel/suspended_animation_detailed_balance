@@ -112,10 +112,9 @@ if __name__ == "__main__":
     mkdir("../scan_results/summary")
     mkdir("../scan_results/summary_tchosen")
     mkdir("../scan_results/summary_tchosen/by_time")
-    for t in time_points:
+    for t in time_points_interpolated:
         mkdir("../scan_results/summary_tchosen/by_time/%d" % t)
         mkdir("../scan_results/raw_tchosen/%d" % t)
-
     mkdir("../scan_results/summary_tchosen/together")
 
 
