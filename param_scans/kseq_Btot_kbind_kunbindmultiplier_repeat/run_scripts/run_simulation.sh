@@ -5,9 +5,9 @@
 #SBATCH --time=23:59:00   # walltime
 #SBATCH -J "SA_simulations"   # job name
 #SBATCH -n 1
-#SBATCH --partition=cpu
+#SBATCH --partition=hmem
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8G
+#SBATCH --mem=100G
 
 
 
