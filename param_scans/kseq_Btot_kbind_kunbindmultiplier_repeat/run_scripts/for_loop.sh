@@ -8,6 +8,7 @@
 #SBATCH --error=../bash_out/for_loop_2nd_jobs_error.out
 #SBATCH -n 1
 #SBATCH --partition=gpu
+#SBATCH --gres=gpu:2
 #SBATCH --mem=100M
 
 
