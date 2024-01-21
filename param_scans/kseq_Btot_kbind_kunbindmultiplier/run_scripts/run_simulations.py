@@ -122,68 +122,68 @@ if __name__ == "__main__":
 
 
     def run_simulations(i):
+        if not os.path.exists("../scan_results/summary_tchosen/by_time/%d/%i.csv" % (time_points_interpolated[-1], i)):
+            _param_dict = param_dict.copy()
+            _anoxia_dict = anoxia_dict.copy()
 
-        _param_dict = param_dict.copy()
-        _anoxia_dict = anoxia_dict.copy()
-
-        _param_dict["k_seq"],_param_dict["B_tot"],_param_dict["kbind"],_anoxia_dict["kunbind_multiplier"] = scan_array[i]
-        sim.initialise_param_dicts(_param_dict,_anoxia_dict)
-        sim.simulate()
-
-
-        sim_values_anoxia = sim.extract_values(sim.y_anoxia)
-        polarity = sim.get_polarity(sim_values_anoxia)
-        sim_values_anoxia["C_pol"] = polarity["C_pol"]
-        sim_values_anoxia["B_pol"] = polarity["B_pol"]
-
-        raw_dict = {"p_t":sim_values_anoxia["p_t"],"b_t":sim_values_anoxia["b_t"]}
+            _param_dict["k_seq"],_param_dict["B_tot"],_param_dict["kbind"],_anoxia_dict["kunbind_multiplier"] = scan_array[i]
+            sim.initialise_param_dicts(_param_dict,_anoxia_dict)
+            sim.simulate()
 
 
-        time_steps = (time_points/t_eval_dict["anoxia"]["dt"]).astype(int)
+            sim_values_anoxia = sim.extract_values(sim.y_anoxia)
+            polarity = sim.get_polarity(sim_values_anoxia)
+            sim_values_anoxia["C_pol"] = polarity["C_pol"]
+            sim_values_anoxia["B_pol"] = polarity["B_pol"]
 
-        columns = 'index','k_seq','B_tot','kbind','kunbind_multiplier','t','C_A_t','C_P_t', 'B_A_t','B_P_t', 'm_A_average','m_P_average', 'b_A_frac','b_P_frac', 'd_P_frac','d_A_frac', 'F_A_t','F_P_t', 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
-        keys = 'C_t', 'B_t', 'm_average', 'b_frac', 'd_frac', 'F_t', 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
-        spatial_outputs = 'C_t', 'B_t', 'm_average', 'b_frac', 'd_frac', 'F_t'
-        non_spatial_outputs = 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
-        df = pd.DataFrame(np.row_stack([np.expand_dims(np.ones_like(sim_values_anoxia["C_pol"]),0)*np.expand_dims(np.array((i,_param_dict["k_seq"],_param_dict["B_tot"],_param_dict["kbind"],_anoxia_dict["kunbind_multiplier"])),1)]+[sim.t_evals["anoxia"]]+[sim_values_anoxia[key] for key in keys]).astype(np.float32).T)
-        df.columns = columns
-        df_chosen_times = df.iloc[time_steps_interpolated]
+            raw_dict = {"p_t":sim_values_anoxia["p_t"],"b_t":sim_values_anoxia["b_t"]}
 
 
-        # #This takes up too much space
-        file_path = "../scan_results/raw/" + str(i) + '.h5'
-        #
-        f = h5py.File(file_path, 'w')
-        f.create_dataset("data", data=df.values, compression="gzip")
-        f.close()
-        #
-        # with open(file_path, 'rb') as f_in:
-        #     with gzip.open(file_path + ".gz", 'wb') as f_out:
-        #         shutil.copyfileobj(f_in, f_out)
-        #
-        # os.remove(file_path)
+            time_steps = (time_points/t_eval_dict["anoxia"]["dt"]).astype(int)
 
-        for t, ti in zip(time_points_interpolated,time_steps_interpolated):
-            file_path = "../scan_results/raw_tchosen/%d/"%t + str(i) + '.h5'
+            columns = 'index','k_seq','B_tot','kbind','kunbind_multiplier','t','C_A_t','C_P_t', 'B_A_t','B_P_t', 'm_A_average','m_P_average', 'b_A_frac','b_P_frac', 'd_P_frac','d_A_frac', 'F_A_t','F_P_t', 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
+            keys = 'C_t', 'B_t', 'm_average', 'b_frac', 'd_frac', 'F_t', 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
+            spatial_outputs = 'C_t', 'B_t', 'm_average', 'b_frac', 'd_frac', 'F_t'
+            non_spatial_outputs = 'A_membrane_frac', 'B_membrane_frac', 'C_pol', 'B_pol'
+            df = pd.DataFrame(np.row_stack([np.expand_dims(np.ones_like(sim_values_anoxia["C_pol"]),0)*np.expand_dims(np.array((i,_param_dict["k_seq"],_param_dict["B_tot"],_param_dict["kbind"],_anoxia_dict["kunbind_multiplier"])),1)]+[sim.t_evals["anoxia"]]+[sim_values_anoxia[key] for key in keys]).astype(np.float32).T)
+            df.columns = columns
+            df_chosen_times = df.iloc[time_steps_interpolated]
+
+
+            # #This takes up too much space
+            file_path = "../scan_results/raw/" + str(i) + '.h5'
+            #
             f = h5py.File(file_path, 'w')
-            for key in raw_dict.keys():
-                f.create_dataset(key, data=raw_dict[key][:,:,ti], compression="gzip")
+            f.create_dataset("data", data=df.values, compression="gzip")
             f.close()
+            #
+            # with open(file_path, 'rb') as f_in:
+            #     with gzip.open(file_path + ".gz", 'wb') as f_out:
+            #         shutil.copyfileobj(f_in, f_out)
+            #
+            # os.remove(file_path)
 
-            with open(file_path, 'rb') as f_in:
-                with gzip.open(file_path + ".gz", 'wb') as f_out:
-                    shutil.copyfileobj(f_in, f_out)
+            # for t, ti in zip(time_points_interpolated,time_steps_interpolated):
+            #     file_path = "../scan_results/raw_tchosen/%d/"%t + str(i) + '.h5'
+            #     f = h5py.File(file_path, 'w')
+            #     for key in raw_dict.keys():
+            #         f.create_dataset(key, data=raw_dict[key][:,:,ti], compression="gzip")
+            #     f.close()
+            #
+            #     with open(file_path, 'rb') as f_in:
+            #         with gzip.open(file_path + ".gz", 'wb') as f_out:
+            #             shutil.copyfileobj(f_in, f_out)
+            #
+            #     os.remove(file_path)
 
-            os.remove(file_path)
+            # df.to_csv("../scan_results/summary/%d.csv"%i)
+            df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
 
-        # df.to_csv("../scan_results/summary/%d.csv"%i)
-        df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
-
-        for j in range(len(df_chosen_times)):
-            out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
-            file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
-            file.write(out)
-            file.close()
+            for j in range(len(df_chosen_times)):
+                out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
+                file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
+                file.write(out)
+                file.close()
 
     Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
     # run_simulations(5)
