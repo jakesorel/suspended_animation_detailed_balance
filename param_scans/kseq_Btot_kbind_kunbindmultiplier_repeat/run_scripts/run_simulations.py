@@ -46,6 +46,7 @@ def mkdir(path):
 
 if __name__ == "__main__":
     mkdir("../scan_results")
+    mkdir("../scan_results/tmp")
 
     i = 0
     N = 15
@@ -193,7 +194,7 @@ if __name__ == "__main__":
                 # file.write(out)
                 # file.close()
 
-    Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
+    Parallel(n_jobs=-1,backend="loky", prefer="threads",temp_folder="../scan_results/tmp")(delayed(run_simulations)(i) for i in range_to_sample)
     # run_simulations(5)
 
     """
