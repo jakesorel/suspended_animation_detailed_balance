@@ -128,6 +128,7 @@ if __name__ == "__main__":
 
     def run_simulations(i):
         if not os.path.exists("../scan_results/summary_tchosen/by_time/%d/%i.csv" % (time_points_interpolated[-1], i)):
+            os.system("df -ih")
             _param_dict = param_dict.copy()
             _anoxia_dict = anoxia_dict.copy()
 
