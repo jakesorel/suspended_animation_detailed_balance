@@ -20,7 +20,8 @@ import gzip
 import shutil
 from joblib import Parallel, delayed
 from joblib.externals.loky.process_executor import TerminatedWorkerError
-
+import os
+os.environ["TMPDIR"] = "/camp/home/cornwaj/working/suspended_animation_detailed_balance/param_scans/kseq_Btot_kbind_kunbindmultiplier_repeat/scan_results/tmp"
 
 
 """
