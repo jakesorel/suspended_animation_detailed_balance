@@ -182,7 +182,12 @@ if __name__ == "__main__":
 
 
             for j in range(len(df_chosen_times)):
-                df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+                try:
+                    df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+                except OSError:
+                    print("OSError, trying again")
+                    df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+
                 # out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
                 # file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
                 # file.write(out)
