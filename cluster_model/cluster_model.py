@@ -5,6 +5,9 @@ from jax import jacrev
 from scipy.integrate import solve_ivp
 from jax import jit
 from functools import partial
+import jax
+jax.config.update('jax_platform_name', 'cpu')
+
 
 
 class OneDCluster(eqx.Module):
