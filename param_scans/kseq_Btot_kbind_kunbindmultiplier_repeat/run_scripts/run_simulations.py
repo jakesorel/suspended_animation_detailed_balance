@@ -195,9 +195,9 @@ if __name__ == "__main__":
                 # file.write(out)
                 # file.close()
 
-    for i in range_to_sample:
-        run_simulations(i)
-    # Parallel(n_jobs=-1,backend="loky", prefer="threads",temp_folder="../scan_results/tmp")(delayed(run_simulations)(i) for i in range_to_sample)
+    # for i in range_to_sample:
+    #     run_simulations(i)
+    Parallel(n_jobs=-1,backend="loky", prefer="threads",temp_folder="../scan_results/tmp")(delayed(run_simulations)(i) for i in range_to_sample)
     # run_simulations(5)
 
     """
