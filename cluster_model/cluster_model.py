@@ -57,7 +57,7 @@ class OneDCluster(eqx.Module):
             (net_rate - rv_rate_active[1:], (jnp.array(((0., 0.),))))) \
               + D_P[1:] * (jnp.roll(p, -1, axis=1) - 2 * p + jnp.roll(p, 1, axis=1)) / (L / 2) ** 2
 
-        ## loading and unloading
+            ## loading and unloading
         A = (p.T * i).sum()
         # A_clust = (p[i0-1:]*i[i0-1:]).sum()
         B = (b.T).sum()
@@ -75,7 +75,7 @@ class OneDCluster(eqx.Module):
         # p1 = d_{1,0} + d_{1,1}
         # p1 = d_{1,0} + b1
         # if only d_{1,0} can unload, then the fraction that can unload is
-        dtp1 = k_onA * A_cyto - k_offA * (p1 - b1) - net_rate.sum() - k_AP * p1
+        dtp1 = k_onA * A_cyto - k_offA * (p1 - b1) - net_rate.sum(axis=0) - k_AP * p1
         dtp = dtp.at[0].add(dtp1)
 
         k_onB_f = k_onB_c * (k_rel * k_offB_f) / (k_seq * k_offB_c)  ###enforces detailed balance.
@@ -118,7 +118,7 @@ class Simulate:
         self.p_init_pre_polarisation, self.b_init_pre_polarisation, self.y_init_pre_polarisation = [], [], []
 
         self.model = OneDCluster(self.normoxia_param_dict["n_clust"], self.normoxia_param_dict["i0"])
-        self.jac = jit(jacrev(self.model, argnums=[1, ]))
+        self.jac = jit(jacrev(self.model, argnums=1))
 
         if t_eval_dict is None:
             self.t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e5},
@@ -207,15 +207,15 @@ class Simulate:
             self.t_evals[key] = np.arange(0, val["tfin"], val["dt"])
             self.t_eval_dict[key]["nt"] = len(self.t_evals[key])
 
-    def solve(self, y0, t_eval, params_start,params_end,tau):
+    def solve(self, y0, t_eval, params_start,params_end,tau,method="LSODA"):
         t_span = [t_eval[0], t_eval[-1]]
-        sol = solve_ivp(self.model, t_span, y0, method="LSODA", t_eval=t_eval, jac=self.jac,
+        sol = solve_ivp(self.model, t_span, y0, method=method, t_eval=t_eval, jac=self.jac,
                         args=(params_start,params_end,tau))
         return sol
 
-    def simulate(self):
+    def simulate(self,method="LSODA"):
         self.y_pre_polarisation = self.solve(self.y_init_pre_polarisation, self.t_evals["pre_polarisation"],
-                                             self.params_pre_polarisation,self.params_pre_polarisation,10).y
+                                             self.params_pre_polarisation,self.params_pre_polarisation,10,method=method).y
         _y_pre_polarisation = self.y_pre_polarisation.reshape(self.normoxia_param_dict["n_clust"] * 2 + 1, 2, -1)
         _y_post_advection = jnp.stack((_y_pre_polarisation[:, 0, -1] + _y_pre_polarisation[:, 1, -1] *
                                        self.normoxia_param_dict["advection_fraction"], _y_pre_polarisation[:, 1, -1] * (

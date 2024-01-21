@@ -48,7 +48,7 @@ if __name__ == "__main__":
     mkdir("../scan_results")
 
     i = 0
-    N = 5
+    N = 15
     k_seq_range = np.logspace(-3,1,N)
     B_tot_range = np.logspace(-3,2,N)
     kbind_range = np.logspace(-3,1,N)
@@ -110,14 +110,14 @@ if __name__ == "__main__":
     time_points_interpolated = np.concatenate((time_points_interpolated,(time_points_to_interpolate[-1],)))
     time_steps_interpolated = np.unique((np.round(time_points_interpolated / t_eval_dict["anoxia"]["dt"])).astype(int))
     time_points_interpolated = sim.t_evals["anoxia"][time_steps_interpolated]
-    mkdir("../scan_results/raw")
-    mkdir("../scan_results/raw_tchosen")
+    # mkdir("../scan_results/raw")
+    # mkdir("../scan_results/raw_tchosen")
     mkdir("../scan_results/summary")
     mkdir("../scan_results/summary_tchosen")
     mkdir("../scan_results/summary_tchosen/by_time")
     for t in time_points_interpolated:
         mkdir("../scan_results/summary_tchosen/by_time/%d" % t)
-        mkdir("../scan_results/raw_tchosen/%d" % t)
+        # mkdir("../scan_results/raw_tchosen/%d" % t)
     mkdir("../scan_results/summary_tchosen/together")
 
 
@@ -149,13 +149,13 @@ if __name__ == "__main__":
             df.columns = columns
             df_chosen_times = df.iloc[time_steps_interpolated]
 
-
-            # #This takes up too much space
-            file_path = "../scan_results/raw/" + str(i) + '.h5'
             #
-            f = h5py.File(file_path, 'w')
-            f.create_dataset("data", data=df.values, compression="gzip")
-            f.close()
+            # # #This takes up too much space
+            # file_path = "../scan_results/raw/" + str(i) + '.h5'
+            # #
+            # f = h5py.File(file_path, 'w')
+            # f.create_dataset("data", data=df.values, compression="gzip")
+            # f.close()
             #
             # with open(file_path, 'rb') as f_in:
             #     with gzip.open(file_path + ".gz", 'wb') as f_out:
