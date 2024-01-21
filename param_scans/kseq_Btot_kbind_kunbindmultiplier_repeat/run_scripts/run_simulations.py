@@ -54,7 +54,7 @@ if __name__ == "__main__":
     kbind_range = np.logspace(-3,1,N)
     kunbind_multiplier = np.logspace(-2,0,N)
 
-    _k_seq,_B_tot,_kbind,_kunbind_multiplier = np.meshgrid(k_seq_range,B_tot_range,kbind_range,kunbind_multiplier)
+    _k_seq,_B_tot,_kbind,_kunbind_multiplier = np.meshgrid(k_seq_range,B_tot_range,kbind_range,kunbind_multiplier,indexing="ij")
     scan_array = np.array((_k_seq.ravel(),
                            _B_tot.ravel(),
                            _kbind.ravel(),
@@ -179,11 +179,14 @@ if __name__ == "__main__":
             # df.to_csv("../scan_results/summary/%d.csv"%i)
             df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
 
+
+
             for j in range(len(df_chosen_times)):
-                out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
-                file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
-                file.write(out)
-                file.close()
+                df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+                # out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
+                # file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
+                # file.write(out)
+                # file.close()
 
     Parallel(n_jobs=-1,backend="loky", prefer="threads")(delayed(run_simulations)(i) for i in range_to_sample)
     # run_simulations(5)
