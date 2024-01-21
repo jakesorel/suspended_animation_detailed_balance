@@ -13,5 +13,5 @@
 eval "$(conda shell.bash hook)"
 source activate regression_modelling
 
-export TMPDIR = /camp/home/cornwaj/working/suspended_animation_detailed_balance/param_scans/kseq_Btot_kbind_kunbindmultiplier_repeat/scan_results/tmp
+export TMPDIR=/camp/home/cornwaj/working/suspended_animation_detailed_balance/param_scans/kseq_Btot_kbind_kunbindmultiplier_repeat/scan_results/tmp
 python run_simulations.py ${SLURM_ARRAY_TASK_ID}
