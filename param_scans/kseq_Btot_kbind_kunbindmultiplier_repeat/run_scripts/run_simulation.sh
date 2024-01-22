@@ -5,7 +5,7 @@
 #SBATCH --time=23:59:00   # walltime
 #SBATCH -J "SA_simulations"   # job name
 #SBATCH -n 1
-#SBATCH --partition=cpu
+#SBATCH --partition=gpu
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
 #SBATCH --mem=128G
