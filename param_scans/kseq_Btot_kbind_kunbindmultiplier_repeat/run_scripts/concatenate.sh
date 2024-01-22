@@ -1,7 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=concatenate_csv
-#SBATCH --output=concatenate_csv.out
-#SBATCH --error=concatenate_csv.err
+#SBATCH --output=../bash_out/concatenate_csv.out
+#SBATCH --error=../bash_out/concatenate_csv.err
+#SBATCH --partition=cpu
+#SBATCH --cpus-per-task=1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
