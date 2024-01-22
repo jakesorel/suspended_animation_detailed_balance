@@ -35,6 +35,6 @@ current_source_dir="$source_dir/$current_dir"
 destination_file="$destination_dir/$current_dir.csv"
 
 # Concatenate all *.csv files in the current subdirectory
-cat "$current_source_dir"/*.csv > "$destination_file"
+find . -name "$current_source_dir"/"*.csv" -print0 | parallel -0 cat > "$destination_file"
 
 echo "Concatenation completed for $current_dir. Result saved to $destination_file."
