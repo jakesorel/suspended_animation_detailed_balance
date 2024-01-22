@@ -30,13 +30,10 @@ if [ -z "$current_dir" ]; then
   exit 0
 fi
 
-# Set the path to the current source directory
-current_source_dir="$source_dir/$current_dir"
-
 # Set the path to the destination file
-destination_file="$destination_dir/$current_dir.csv"
+destination_file="$destination_dir/$(basename "$current_dir").csv"
 
 # Concatenate all *.csv files in the current subdirectory
-find . -name "$current_source_dir"/"*.csv" -print0 | parallel -0 cat > "$destination_file"
+find . -name "$current_dir"/"*.csv" -print0 | parallel -0 cat > "$destination_file"
 
 echo "Concatenation completed for $current_dir. Result saved to $destination_file."
