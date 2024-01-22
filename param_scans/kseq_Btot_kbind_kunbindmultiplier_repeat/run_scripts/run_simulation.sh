@@ -7,7 +7,8 @@
 #SBATCH -n 1
 #SBATCH --partition=cpu
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=64G
+#SBATCH --gres=gpu:1
+#SBATCH --mem=128G
 
 
 
