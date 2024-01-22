@@ -9,7 +9,6 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=1:00:00
 #SBATCH --array=1-241
-
 ml parallel
 
 # Set the path to the source directory
@@ -19,7 +18,7 @@ source_dir="../scan_results/summary_tchosen/by_time"
 destination_dir="../scan_results/summary_tchosen/by_time_concatenated"
 
 # Get the sorted list of subdirectories
-subdirectories=($(ls -1 "$source_dir" | sort))
+subdirectories=("$source_dir"/*)
 
 # Get the current subdirectory
 current_dir=${subdirectories[SLURM_ARRAY_TASK_ID-1]}
