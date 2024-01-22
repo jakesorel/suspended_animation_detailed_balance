@@ -6,7 +6,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=1:00:00
-#SBATCH --array=1-<number_of_subdirectories>
+#SBATCH --array=1-241
 
 # Set the path to the source directory
 source_dir="../scan_results/summary_tchosen/by_time"
