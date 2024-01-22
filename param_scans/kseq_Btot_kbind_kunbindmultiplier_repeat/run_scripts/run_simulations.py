@@ -100,7 +100,7 @@ if __name__ == "__main__":
     sim = Simulate(param_dict,anoxia_dict,t_eval_dict)
 
     total_sim_number = N**4
-    n_jobs = 75
+    n_jobs = N**2
     sims_per_lot = int(total_sim_number/n_jobs)
 
     slurm_index = int(sys.argv[1])
