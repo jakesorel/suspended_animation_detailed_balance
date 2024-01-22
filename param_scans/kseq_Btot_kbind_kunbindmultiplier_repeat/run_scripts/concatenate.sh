@@ -8,6 +8,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=1:00:00
+#SBATCH --mem=4G
 #SBATCH --array=1-241
 ml parallel
 
