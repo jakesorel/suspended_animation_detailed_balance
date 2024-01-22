@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     def run_simulations(i):
         if not os.path.exists("../scan_results/summary_tchosen/by_time/%d/%i.csv" % (time_points_interpolated[-1], i)):
-            os.system("df -ih")
+            os.system("df -h")
             _param_dict = param_dict.copy()
             _anoxia_dict = anoxia_dict.copy()
 
@@ -183,16 +183,15 @@ if __name__ == "__main__":
             #     os.remove(file_path)
 
             # df.to_csv("../scan_results/summary/%d.csv"%i)
-            df_chosen_times.to_csv("../scan_results/summary_tchosen/together/%d.csv"%i)
+            df_chosen_times.to_csv("/camp/home/cornwaj/working/suspended_animation_detailed_balance/param_scans/kseq_Btot_kbind_kunbindmultiplier_repeat/scan_results/summary_tchosen/together/%d.csv"%i)
 
 
 
             for j in range(len(df_chosen_times)):
                 try:
-                    df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+                    df_chosen_times.iloc[j:j+1].to_csv("/camp/home/cornwaj/working/suspended_animation_detailed_balance/param_scans/kseq_Btot_kbind_kunbindmultiplier_repeat/scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
                 except OSError:
-                    print("OSError, trying again")
-                    df_chosen_times.iloc[j:j+1].to_csv("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i), header=False)
+                    print("OSError, skipping")
 
                 # out = ",".join(df_chosen_times.iloc[j].values.astype(str)) + "\n"
                 # file = open("../scan_results/summary_tchosen/by_time/%d/%i.csv"%(time_points_interpolated[j],i),"w+")
