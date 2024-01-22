@@ -10,6 +10,8 @@
 #SBATCH --time=1:00:00
 #SBATCH --array=1-241
 
+ml parallel
+
 # Set the path to the source directory
 source_dir="../scan_results/summary_tchosen/by_time"
 
