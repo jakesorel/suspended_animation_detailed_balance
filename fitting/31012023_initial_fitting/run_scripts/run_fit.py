@@ -310,10 +310,10 @@ if __name__ == "__main__":
                           'k_offA':[-0.7,0.7],
                           'k_onB_c':[-4,1],
                           'kbind':[-4,2],
-                          'kunbind':[1.3,2],
+                          'kunbind':[-2,-1.3],
                           'k_seq':[-4,2],
                           'k_rel_multiplier':[-2,0],
-                          'kunbind_anoxia':[2.255,2.477]}
+                          'kunbind_anoxia':[-2.477,-2.255]}
 
     log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims[nm]) for nm in fit_param_names])
     log10_fit_params_bounds = np.array([log10_fit_param_lims[nm] for nm in fit_param_names])
