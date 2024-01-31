@@ -13,4 +13,4 @@ eval "$(conda shell.bash hook)"
 source activate regression_modelling
 
 
-python run_simulations.py ${SLURM_ARRAY_TASK_ID}
+python run_fit.py ${SLURM_ARRAY_TASK_ID}
