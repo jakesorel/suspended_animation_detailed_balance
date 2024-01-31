@@ -105,9 +105,9 @@ if __name__ == "__main__":
     print("Slurm index", slurm_index)
 
     ##import Joana's data
-    df = pd.read_csv(".../data/Intensities_ASI.csv")
-    df = pd.read_csv(
-        "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/Intensities_ASI.csv")
+    df = pd.read_csv("../data/Intensities_ASI.csv")
+    # df = pd.read_csv(
+    #     "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/Intensities_ASI.csv")
 
     df["CellCycle_full"] = [nm.split("_")[-1] for nm in df["EmbryoID"]]
     df["CellCycle"] = [nm if nm == "postNEBD" else "preNEBD" for nm in df["CellCycle_full"]]
