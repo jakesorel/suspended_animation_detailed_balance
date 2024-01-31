@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
     log = []
     res = None
-    n_iter = 10
+    n_iter = int(1e5)
     lowest_cost = 1e9
     opt_param = None
     log_index = None
@@ -330,14 +330,14 @@ if __name__ == "__main__":
                      args=(log,),
                      method="Nelder-Mead",
                      bounds=log10_fit_params_bounds,
-                     options={"maxiter":10,"return_all":True})
+                     options={"maxiter":2,"return_all":True})
         else:
             res = minimize(_run_simulation,
                            x0,
                            args=(log,),
                            method="Nelder-Mead",
                            bounds=log10_fit_params_bounds,
-                           options={"maxiter": 10, "return_all": True,"initial_simplex":res["final_simplex"][0]})
+                           options={"maxiter": 2, "return_all": True,"initial_simplex":res["final_simplex"][0]})
 
         if res.fun < 1e4:##if simulation hits a solving wall or numerical error, randomise
             x0 = res.x
