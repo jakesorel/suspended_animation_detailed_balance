@@ -21,11 +21,11 @@ class OneDCluster(eqx.Module):
     """
 
     @partial(jit, static_argnums=(3, 4))
-    def f(self, t, y, n_clust, i0, params_start,params_end,tau):
+    def f(self, t, y, n_clust, i0, params_start,params_end,tau,k_rel_passive):
         frac_start = jnp.exp(-t/tau)
         frac_end = 1- frac_start
         params = frac_start*params_start + frac_end*params_end
-        D_A, D_C, k_onA, k_offA, k_onB_c, k_offB_f, k_offB_c, kbind_c, kunbind_c, kbind_m, kunbind_m, k_seq, k_rel, A_tot, B_tot, psi, L, _k_AP = params
+        D_A,D_B, D_C, k_onA, k_offA, k_onB_c, k_offB_f, k_offB_c, kbind_c, kunbind_c, kbind_m, kunbind_m, k_seq, k_rel, A_tot, B_tot, psi, L, _k_AP = params
 
         _y = y.reshape(n_clust * 2 + 1, 2)
         p, b = _y[:n_clust], _y[n_clust:]
@@ -52,7 +52,7 @@ class OneDCluster(eqx.Module):
         fw_rate = jnp.concatenate((fw_rate_monomers[:i0 - 1], fw_rate_cluster[i0 - 1:-1]))
         rv_rate = jnp.concatenate((rv_rate_monomers[1:i0], rv_rate_cluster[i0:]))
 
-        D_P = jnp.concatenate((jnp.array(((0.,),)), jnp.expand_dims((i <= i0) * D_A + (i > i0) * D_C, 1)))
+        D_P = jnp.concatenate((jnp.expand_dims(jnp.array(((D_B),)),1), jnp.expand_dims((i <= i0) * D_A + (i > i0) * D_C, 1)))
 
         net_rate = fw_rate - rv_rate
 
@@ -81,7 +81,7 @@ class OneDCluster(eqx.Module):
         dtp1 = k_onA * A_cyto - k_offA * (p1 - b1) - net_rate.sum(axis=0) - k_AP * p1
         dtp = dtp.at[0].add(dtp1)
 
-        k_onB_f = k_onB_c * (k_rel * k_offB_f) / (k_seq * k_offB_c)  ###enforces detailed balance.
+        k_onB_f = k_onB_c * (k_rel_passive * k_offB_f) / (k_seq * k_offB_c)  ###enforces detailed balance.
 
         b_load = (k_seq * b0 + k_onB_c * B_cyto) * (jnp.expand_dims(i, 1) * p - _b)
         b_unload = (k_rel + k_offB_c) * _b
@@ -110,8 +110,8 @@ class OneDCluster(eqx.Module):
 
         return dty
 
-    def __call__(self, t, y, params_start,params_end,tau):
-        return self.f(t, y, self.n_clust, self.i0, params_start,params_end,tau)
+    def __call__(self, t, y, params_start,params_end,tau,k_rel_passive):
+        return self.f(t, y, self.n_clust, self.i0, params_start,params_end,tau,k_rel_passive)
 
 
 class Simulate:
@@ -126,10 +126,12 @@ class Simulate:
         if t_eval_dict is None:
             self.t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e5},
                                 'polarisation': {"dt": 10, "tfin": 1e3},
+                                'NEBD': {"dt": 10, "tfin": 1e3},
                                 'anoxia': {"dt": 10, "tfin": 1e6}}
         else:
             assert "pre_polarisation" in t_eval_dict
             assert "polarisation" in t_eval_dict
+            assert "NEBD" in t_eval_dict
             assert "anoxia" in t_eval_dict
             for key, val in t_eval_dict.items():
                 assert "dt" in val
@@ -144,38 +146,20 @@ class Simulate:
 
     def initialise_param_dicts(self,param_dict,anoxia_dict):
 
-        self.param_names = "D_A,D_C,k_onA,k_offA,k_onB_c,k_offB_f,k_offB_c,kbind_c,kunbind_c,kbind_m,kunbind_m,k_seq,k_rel,A_tot,B_tot,psi,L,k_AP".split(
+        self.param_names = "D_A,D_B,D_C,k_onA,k_offA,k_onB_c,k_offB_f,k_offB_c,kbind_c,kunbind_c,kbind_m,kunbind_m,k_seq,k_rel,A_tot,B_tot,psi,L,k_AP".split(
             ",")
+        assert param_dict is not None
 
-        if param_dict is None:
-            self.normoxia_param_dict = {'D_A': 1e-3,
-                                        'D_C': 1e-4,  ##NOTE THAT FOR NOW, NO DIFFUSION OF B
-                                        'k_onA': 1e-3,
-                                        'k_offA': 5e-3,
-                                        'k_onB_c': 1e-3,
-                                        'k_offB_f': 5e-3,
-                                        'k_offB_c': 5e-3,
-                                        'kbind': 0.5,
-                                        'kunbind': 0.002,
-                                        'k_seq': 0.8,
-                                        'k_rel': 0.01,
-                                        'A_tot': 1.0,
-                                        'B_tot': 1.0,
-                                        'psi': 0.137,  ##check this!
-                                        'L': 173.,
-                                        'k_AP': 1e1,
-                                        'n_clust': 128,
-                                        'i0': 3,
-                                        'advection_fraction': 0.99,
-                                        "tau_pol":60,
-                                        "tau_anox":600}
-        else:
-            self.normoxia_param_dict = param_dict
+        self.normoxia_param_dict = param_dict
 
         self.normoxia_param_dict["kbind_c"] = self.normoxia_param_dict["kbind"] * self.normoxia_param_dict["i0"]
         self.normoxia_param_dict["kbind_m"] = self.normoxia_param_dict["kbind"]
         self.normoxia_param_dict["kunbind_c"] = self.normoxia_param_dict["kunbind"]
         self.normoxia_param_dict["kunbind_m"] = self.normoxia_param_dict["kunbind"]
+
+        self.postNEBD_param_dict = self.normoxia_param_dict.copy()
+        self.postNEBD_param_dict["kunbind_c"] = self.postNEBD_param_dict["kunbind_postNEBD"]
+        self.postNEBD_param_dict["kunbind_m"] = self.postNEBD_param_dict["kunbind_postNEBD"]
 
         self.normoxia_prepolarisation_param_dict = self.normoxia_param_dict.copy()
         self.normoxia_prepolarisation_param_dict["k_AP"] = 0.
@@ -189,13 +173,15 @@ class Simulate:
 
         self.anoxia_param_dict = self.normoxia_param_dict.copy()
         self.anoxia_param_dict["k_AP"] *= self.anoxia_dict["k_AP_multiplier"]
-        self.anoxia_param_dict["kunbind"] *= self.anoxia_dict["kunbind_multiplier"]
-        self.anoxia_param_dict["kunbind_c"] *= self.anoxia_dict["kunbind_multiplier"]
-        self.anoxia_param_dict["kunbind_m"] *= self.anoxia_dict["kunbind_multiplier"]
+        self.anoxia_param_dict["kunbind"] = self.anoxia_dict["kunbind_anoxia"]
+        self.anoxia_param_dict["kunbind_c"] = self.anoxia_dict["kunbind_anoxia"]
+        self.anoxia_param_dict["kunbind_m"] = self.anoxia_dict["kunbind_anoxia"]
         self.anoxia_param_dict["k_rel"] *= self.anoxia_dict["k_rel_multiplier"]
 
         self.params_pre_polarisation = jnp.array([self.normoxia_prepolarisation_param_dict[nm] for nm in self.param_names])
         self.params_normoxia = jnp.array([self.normoxia_param_dict[nm] for nm in self.param_names])
+        self.params_postNEBD = jnp.array([self.postNEBD_param_dict[nm] for nm in self.param_names])
+
         self.params_anoxia = jnp.array([self.anoxia_param_dict[nm] for nm in self.param_names])
 
 
@@ -213,26 +199,74 @@ class Simulate:
     def solve(self, y0, t_eval, params_start,params_end,tau,method="LSODA"):
         t_span = [t_eval[0], t_eval[-1]]
         sol = solve_ivp(self.model, t_span, y0, method=method, t_eval=t_eval, jac=self.jac,
-                        args=(params_start,params_end,tau))
+                        args=(params_start,params_end,tau,self.anoxia_param_dict["k_rel"]))
         return sol
 
-    def simulate(self,method="LSODA"):
+    def simulate(self,method="LSODA",pre_polarisation_only=False):
         self.y_pre_polarisation = self.solve(self.y_init_pre_polarisation, self.t_evals["pre_polarisation"],
                                              self.params_pre_polarisation,self.params_pre_polarisation,10,method=method).y
+        if not pre_polarisation_only:
+            _y_pre_polarisation = self.y_pre_polarisation.reshape(self.normoxia_param_dict["n_clust"] * 2 + 1, 2, -1)
+            _y_post_advection = jnp.stack((_y_pre_polarisation[:, 0, -1] + _y_pre_polarisation[:, 1, -1] *
+                                           self.normoxia_param_dict["advection_fraction"], _y_pre_polarisation[:, 1, -1] * (
+                                                   1 - self.normoxia_param_dict["advection_fraction"])), axis=1)
+            self.y_post_advection = _y_post_advection.reshape(self.y_pre_polarisation.shape[:-1])
+
+            self.y_polarisation = self.solve(self.y_post_advection, self.t_evals["polarisation"], self.params_pre_polarisation,self.params_normoxia,self.normoxia_param_dict["tau_pol"]).y
+            self.y_postNEBD = None
+            if self.t_evals["NEBD"].max()>0:
+                self.y_postNEBD = self.solve(self.y_polarisation[...,-1], self.t_evals["NEBD"], self.params_normoxia,self.params_postNEBD,self.normoxia_param_dict["tau_NEBD"]).y
+                self.y_anoxia = self.solve(self.y_postNEBD[..., -1], self.t_evals["anoxia"], self.params_postNEBD,self.params_anoxia,self.normoxia_param_dict["tau_anox"]).y
+            else:
+                self.y_postNEBD = np.zeros((0,self.y_polarisation.shape[1]))
+                self.y_anoxia = self.solve(self.y_polarisation[..., -1], self.t_evals["anoxia"], self.params_normoxia,self.params_anoxia,self.normoxia_param_dict["tau_anox"]).y
+
+
+
+            self.y = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_postNEBD,self.y_anoxia))
+            self.t_eval = jnp.concatenate((self.t_evals["pre_polarisation"],
+                                           self.t_evals["polarisation"] + self.t_evals["pre_polarisation"][-1],
+                                           self.t_evals["NEBD"] + self.t_evals["polarisation"][-1] + self.t_evals["pre_polarisation"][-1],
+                                           self.t_evals["anoxia"] +self.t_evals["NEBD"][-1] + self.t_evals["polarisation"][-1] + self.t_evals["pre_polarisation"][-1]))
+        else:
+            self.y = self.y_polarisation
+            self.t_eval = self.t_evals["pre_polarisation"]
+
+    def simulate_pre_and_post(self, method="LSODA"):
+        self.y_pre_polarisation = self.solve(self.y_init_pre_polarisation, self.t_evals["pre_polarisation"],
+                                             self.params_pre_polarisation, self.params_pre_polarisation, 10,
+                                             method=method).y
         _y_pre_polarisation = self.y_pre_polarisation.reshape(self.normoxia_param_dict["n_clust"] * 2 + 1, 2, -1)
         _y_post_advection = jnp.stack((_y_pre_polarisation[:, 0, -1] + _y_pre_polarisation[:, 1, -1] *
-                                       self.normoxia_param_dict["advection_fraction"], _y_pre_polarisation[:, 1, -1] * (
+                                       self.normoxia_param_dict["advection_fraction"],
+                                       _y_pre_polarisation[:, 1, -1] * (
                                                1 - self.normoxia_param_dict["advection_fraction"])), axis=1)
         self.y_post_advection = _y_post_advection.reshape(self.y_pre_polarisation.shape[:-1])
 
-        self.y_polarisation = self.solve(self.y_post_advection, self.t_evals["polarisation"], self.params_pre_polarisation,self.params_normoxia,self.normoxia_param_dict["tau_pol"]).y
-        self.y_anoxia = self.solve(self.y_polarisation[..., -1], self.t_evals["anoxia"], self.params_normoxia,self.params_anoxia,self.normoxia_param_dict["tau_anox"]).y
+        self.y_polarisation = self.solve(self.y_post_advection, self.t_evals["polarisation"],
+                                         self.params_pre_polarisation, self.params_normoxia,
+                                         self.normoxia_param_dict["tau_pol"]).y
+        self.y_postNEBD = self.solve(self.y_polarisation[..., -1], self.t_evals["NEBD"], self.params_normoxia,
+                                     self.params_postNEBD, self.normoxia_param_dict["tau_NEBD"]).y
+        self.y_anoxia_postNEBD = self.solve(self.y_postNEBD[..., -1], self.t_evals["anoxia"], self.params_postNEBD,
+                                   self.params_anoxia, self.normoxia_param_dict["tau_anox"]).y
+        self.y_anoxia_preNEBD = self.solve(self.y_polarisation[..., -1], self.t_evals["anoxia"], self.params_normoxia,
+                                   self.params_anoxia, self.normoxia_param_dict["tau_anox"]).y
 
-        self.y = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_anoxia))
-        self.t_eval = jnp.concatenate((self.t_evals["pre_polarisation"],
+        self.y_preNEBD = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_anoxia_preNEBD))
+        self.y_postNEBD = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_postNEBD, self.y_anoxia_postNEBD))
+
+        self.t_eval_preNEBD = jnp.concatenate((self.t_evals["pre_polarisation"],
                                        self.t_evals["polarisation"] + self.t_evals["pre_polarisation"][-1],
-                                       self.t_evals["anoxia"] + self.t_evals["polarisation"][-1] +
-                                       self.t_evals["pre_polarisation"][-1]))
+                                       self.t_evals["anoxia"] +
+                                       self.t_evals["polarisation"][-1] + self.t_evals["pre_polarisation"][-1]))
+        self.t_eval_postNEBD = jnp.concatenate((self.t_evals["pre_polarisation"],
+                                       self.t_evals["polarisation"] + self.t_evals["pre_polarisation"][-1],
+                                       self.t_evals["NEBD"] + self.t_evals["polarisation"][-1] +
+                                       self.t_evals["pre_polarisation"][-1],
+                                       self.t_evals["anoxia"] + self.t_evals["NEBD"][-1] +
+                                       self.t_evals["polarisation"][-1] + self.t_evals["pre_polarisation"][-1]))
+
 
     def polarity(self, X_t):
         return (X_t.max(axis=0) - X_t.min(axis=0)) / (X_t.max(axis=0) + X_t.min(axis=0))
