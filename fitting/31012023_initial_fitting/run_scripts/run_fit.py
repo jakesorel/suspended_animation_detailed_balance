@@ -62,6 +62,8 @@ if __name__ == "__main__":
     mkdir("../fit_results/logs")
     mkdir("../fit_results/current_best")
     mkdir("../fit_results/current_best/cost")
+    mkdir("../fit_results/current_best/cost_dict")
+
     mkdir("../fit_results/current_best/log_index")
     mkdir("../fit_results/current_best/opt_param")
 
@@ -320,6 +322,7 @@ if __name__ == "__main__":
     res = None
     n_iter = int(1e5)
     lowest_cost = 1e9
+    cost_dict = None
     opt_param = None
     log_index = None
     x0 = log10_fit_params_init
@@ -350,6 +353,7 @@ if __name__ == "__main__":
 
         costs = np.array([dct["cost"] for dct in log])
         log_index = np.nanargmin(costs)
+        cost_dict = log[log_index]["cost_dict"]
         lowest_cost = costs[log_index]
         opt_param = log[log_index]["log10_fit_params"]
 
@@ -362,6 +366,11 @@ if __name__ == "__main__":
 
         f = open("../fit_results/current_best/cost/%d.txt"%slurm_index,"w")
         f.write(str(lowest_cost) + "\n")
+        f.close()
+
+        f = open("../fit_results/current_best/cost_dict/%d.txt"%slurm_index,"w")
+        f.write(",".join(list(cost_dict.keys())) + "\n")
+        f.write(",".join(np.array(list(cost_dict.values())).astype(str)) + "\n")
         f.close()
 
         f = open("../fit_results/current_best/log_index/%d.txt"%slurm_index,"w")
