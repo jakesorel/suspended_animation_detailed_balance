@@ -253,8 +253,8 @@ class Simulate:
         self.y_anoxia_preNEBD = self.solve(self.y_polarisation[..., -1], self.t_evals["anoxia"], self.params_normoxia,
                                    self.params_anoxia, self.normoxia_param_dict["tau_anox"]).y
 
-        self.y_preNEBD = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_anoxia_preNEBD))
-        self.y_postNEBD = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_postNEBD, self.y_anoxia_postNEBD))
+        self.y_preNEBD_total = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_anoxia_preNEBD))
+        self.y_postNEBD_total = jnp.column_stack((self.y_pre_polarisation, self.y_polarisation, self.y_postNEBD, self.y_anoxia_postNEBD))
 
         self.t_eval_preNEBD = jnp.concatenate((self.t_evals["pre_polarisation"],
                                        self.t_evals["polarisation"] + self.t_evals["pre_polarisation"][-1],

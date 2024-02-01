@@ -14,6 +14,7 @@ from cluster_model.cluster_model import Simulate
 import numpy as np
 import pandas as pd
 import threading
+import matplotlib.pyplot as plt
 
 try:
     import thread
@@ -58,14 +59,8 @@ def mkdir(path):
 
 
 if __name__ == "__main__":
-    mkdir("../fit_results")
-    mkdir("../fit_results/logs")
-    mkdir("../fit_results/current_best")
-    mkdir("../fit_results/current_best/cost")
-    mkdir("../fit_results/current_best/cost_dict")
 
-    mkdir("../fit_results/current_best/log_index")
-    mkdir("../fit_results/current_best/opt_param")
+
 
     param_dict = {'D_A': 0.2,##ADJUST
                   "D_B":0.28,
@@ -103,13 +98,10 @@ if __name__ == "__main__":
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
-    slurm_index = int(sys.argv[1])
-    print("Slurm index", slurm_index)
-
     ##import Joana's data
-    df = pd.read_csv("../data/Intensities_ASI.csv")
-    # df = pd.read_csv(
-    #     "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/Intensities_ASI.csv")
+    # df = pd.read_csv("../data/Intensities_ASI.csv")
+    df = pd.read_csv(
+        "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/Intensities_ASI.csv")
 
     df["CellCycle_full"] = [nm.split("_")[-1] for nm in df["EmbryoID"]]
     df["CellCycle"] = [nm if nm == "postNEBD" else "preNEBD" for nm in df["CellCycle_full"]]
@@ -134,6 +126,7 @@ if __name__ == "__main__":
 
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
+    log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
 
     @exit_after(100)
     def run_simulation(log10_fit_params,log):
@@ -204,8 +197,8 @@ if __name__ == "__main__":
         ground_truths \
             = {"CR1_membrane_frac":0.05,
              "B_bound_frac":0.2,
-             "preNEBD_cluster_size_fold_increase":2.,
-            "postNEBD_cluster_size_fold_increase":4.,
+             "preNEBD_cluster_size_fold_increase":4.,
+            "postNEBD_cluster_size_fold_increase":2.,
                "preNEBD_membrane_frac":0.3,
                "postNEBD_membrane_frac":0.15,
                "N_clusters":400
@@ -295,8 +288,20 @@ if __name__ == "__main__":
                        "cost_weighted":cost_weighted,
                        "param_dict":_param_dict,
                        "anoxia_dict":_anoxia_dict}
-        log.append(current_log)
-        # print(model_prediction_ground_truths)
+
+        fig, ax = plt.subplots()
+        ax.plot(polarity_preNEBD["C_pol"])
+        ax.plot(polarity_postNEBD["C_pol"])
+        ax.plot(polarity_preNEBD_KD["C_pol"])
+        ax.plot(polarity_postNEBD_KD["C_pol"])
+        fig.show()
+
+        fig, ax = plt.subplots()
+        ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
+        ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
+        ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
+        ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
+        fig.show()
         return cost
 
     def _run_simulation(log10_fit_params,log):
@@ -320,7 +325,7 @@ if __name__ == "__main__":
 
     log = []
     res = None
-    n_iter = int(1e6)
+    n_iter = int(1e5)
     lowest_cost = 1e9
     cost_dict = None
     opt_param = None

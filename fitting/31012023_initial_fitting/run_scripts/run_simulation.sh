@@ -7,7 +7,7 @@
 #SBATCH -n 1
 #SBATCH --partition=cpu
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
+#SBATCH --mem=2G
 
 eval "$(conda shell.bash hook)"
 source activate regression_modelling
