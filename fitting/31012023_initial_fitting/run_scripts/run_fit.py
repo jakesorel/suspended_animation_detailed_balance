@@ -341,7 +341,7 @@ if __name__ == "__main__":
     def _run_simulation(log10_fit_params,logger):
         try:
             return run_simulation(log10_fit_params,logger)
-        except:
+        except KeyboardInterrupt:
             return 1e5
 
 
