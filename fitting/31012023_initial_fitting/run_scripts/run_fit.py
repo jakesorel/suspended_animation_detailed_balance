@@ -237,7 +237,7 @@ if __name__ == "__main__":
         stagesimpleRNAi_to_index = {'early maint._ctrlRNAi':0,
                                     'late maint._ctrlRNAi':1,
                                     'early maint._cdc42RNAi':2,
-                                    'late maint._cdc42RNAi':2}
+                                    'late maint._cdc42RNAi':3}
 
         _df = df.copy()
         _df["pol_model"] = [pol_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]

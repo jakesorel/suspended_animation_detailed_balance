@@ -33,7 +33,10 @@ fig, ax = plt.subplots(2,len(df["RNAi"].unique()),figsize=(12,8))
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
     sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm",hue="StageSimple")
+    sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm_model",hue="StageSimple")
+
     sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm",hue="StageSimple")
+    sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm_model",hue="StageSimple")
 
 # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
     ax[0,i].set_title(rnai)
@@ -45,7 +48,9 @@ fig.show()
 fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
+    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new_model",hue="StageSimple")
     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
+
     ax[i].set_title(rnai)
 
 # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
@@ -58,6 +63,8 @@ fig, ax = plt.subplots(1,2,sharey=True)
 for i, rnai in enumerate(df["RNAi"].unique()[[0,3]]):
     dfi = df[df["RNAi"] == rnai]
     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASINormtot1",hue="CellCycle_RNAi")
+    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASINormtot1",hue="CellCycle_RNAi")
+
 # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
 
 # ax.legend("off")
