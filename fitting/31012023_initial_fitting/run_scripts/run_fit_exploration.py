@@ -126,8 +126,8 @@ if __name__ == "__main__":
 
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
-    log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
-
+    # log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
+    log10_fit_params = 0.6818369651315654, 0.6172107604360781, -3.5704303265353303, -1.398565895411668, -1.5221201521849879, -2.595543105585369, -0.15758240198409607, -2.356709953803964
     @exit_after(100)
     def run_simulation(log10_fit_params,log):
         _param_dict = param_dict.copy()
@@ -197,8 +197,8 @@ if __name__ == "__main__":
         ground_truths \
             = {"CR1_membrane_frac":0.05,
              "B_bound_frac":0.2,
-             "preNEBD_cluster_size_fold_increase":4.,
-            "postNEBD_cluster_size_fold_increase":2.,
+             "preNEBD_cluster_size_fold_increase":2.,
+            "postNEBD_cluster_size_fold_increase":4.,
                "preNEBD_membrane_frac":0.3,
                "postNEBD_membrane_frac":0.15,
                "N_clusters":400
@@ -267,13 +267,13 @@ if __name__ == "__main__":
 
         ##Weight costs
 
-        cost_weighting = {"AnteriorConc":1,
-                          "PosteriorConc":1,
-                          "ASI": 1,
+        cost_weighting = {"AnteriorConc":4,
+                          "PosteriorConc":4,
+                          "ASI": 4,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
-                         "preNEBD_cluster_size_fold_increase":1,
-                        "postNEBD_cluster_size_fold_increase":1,
+                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"],
+                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"],
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
                            "N_clusters":1/ground_truths["N_clusters"]
@@ -301,6 +301,14 @@ if __name__ == "__main__":
         ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
         ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
         ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
+        fig.show()
+
+        fig, ax = plt.subplots()
+        ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
+        ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
+        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
+        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
+        ax.legend()
         fig.show()
         return cost
 

@@ -274,13 +274,13 @@ if __name__ == "__main__":
 
         ##Weight costs
 
-        cost_weighting = {"AnteriorConc":1,
-                          "PosteriorConc":1,
-                          "ASI": 1,
+        cost_weighting = {"AnteriorConc":4,
+                          "PosteriorConc":4,
+                          "ASI": 4,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
-                         "preNEBD_cluster_size_fold_increase":1,
-                        "postNEBD_cluster_size_fold_increase":1,
+                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"],
+                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"],
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
                            "N_clusters":1/ground_truths["N_clusters"]
