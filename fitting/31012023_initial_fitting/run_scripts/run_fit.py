@@ -142,7 +142,7 @@ if __name__ == "__main__":
             asi_norm[i,j] = dfi["ASINorm2tot1"].values
 
     @exit_after(500)
-    def run_simulation(log10_fit_params,log):
+    def run_simulation(log10_fit_params,logger):
         _param_dict = param_dict.copy()
         _anoxia_dict = anoxia_dict.copy()
         for i, nm in enumerate(fit_param_names):
@@ -302,8 +302,38 @@ if __name__ == "__main__":
                        "cost_weighted":cost_weighted,
                        "param_dict":_param_dict,
                        "anoxia_dict":_anoxia_dict}
-        log.append(current_log)
+        logger["log"].append(current_log)
         # print(model_prediction_ground_truths)
+
+        logger["costs"] = np.array([dct["cost"] for dct in log])
+        logger["log_index"] = np.nanargmin(logger["costs"])
+        logger["cost_dict"] = logger["log"][logger["log_index"]]["cost_dict"]
+        logger["lowest_cost"] = logger["costs"][logger["log_index"]]
+        logger["opt_param"] = logger["log"][logger["log_index"]]["log10_fit_params"]
+
+        if cost < logger["lowest_cost"]:
+            logger["lowest_cost"] = cost
+            logger["opt_param"] = log10_fit_params
+
+            with gzip.open("../fit_results/logs/optim_%d.pickle.gz"%slurm_index, "wb") as f:
+                pickle.dump(logger["log"], f)
+
+            f = open("../fit_results/current_best/cost/%d.txt"%slurm_index,"w")
+            f.write(str(logger["lowest_cost"]) + "\n")
+            f.close()
+
+            f = open("../fit_results/current_best/cost_dict/%d.txt"%slurm_index,"w")
+            f.write(",".join(list(logger["cost_dict"].keys())) + "\n")
+            f.write(",".join(np.array(list(logger["cost_dict"].values())).astype(str)) + "\n")
+            f.close()
+
+            f = open("../fit_results/current_best/log_index/%d.txt"%slurm_index,"w")
+            f.write(str(logger["log_index"]) + "\n")
+            f.close()
+
+            f = open("../fit_results/current_best/opt_param/%d.txt"%slurm_index,"w")
+            f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
+            f.close()
         return cost
 
     def _run_simulation(log10_fit_params,log):
@@ -325,29 +355,31 @@ if __name__ == "__main__":
     log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims[nm]) for nm in fit_param_names])
     log10_fit_params_bounds = np.array([log10_fit_param_lims[nm] for nm in fit_param_names])
 
-    log = []
+    logger = {"log":[],
+              "lowest_cost":1e9,
+              "cost_dict":None,
+              "opt_param":None,
+              "log_index":None}
+
     res = None
     n_iter = int(1e5)
     lowest_cost = 1e9
-    cost_dict = None
-    opt_param = None
-    log_index = None
     x0 = log10_fit_params_init
     for i in range(n_iter):
         if res is None:
             res = minimize(_run_simulation,
                      x0,
-                     args=(log,),
+                     args=(logger,),
                      method="Nelder-Mead",
                      bounds=log10_fit_params_bounds,
-                     options={"maxiter":2,"return_all":True})
+                     options={"maxiter":500,"return_all":True})
         else:
             res = minimize(_run_simulation,
                            x0,
-                           args=(log,),
+                           args=(logger,),
                            method="Nelder-Mead",
                            bounds=log10_fit_params_bounds,
-                           options={"maxiter": 2, "return_all": True,"initial_simplex":res["final_simplex"][0]})
+                           options={"maxiter": 500, "return_all": True,"initial_simplex":res["final_simplex"][0]})
 
         if res.fun < 1e4:##if simulation hits a solving wall or numerical error, randomise
             x0 = res.x
@@ -358,34 +390,5 @@ if __name__ == "__main__":
             new_val = np.random.uniform(*log10_fit_params_bounds[idx])
             x0[idx] = new_val
 
-        costs = np.array([dct["cost"] for dct in log])
-        log_index = np.nanargmin(costs)
-        cost_dict = log[log_index]["cost_dict"]
-        lowest_cost = costs[log_index]
-        opt_param = log[log_index]["log10_fit_params"]
-
-        if res.fun < lowest_cost:
-            lowest_cost = res.fun
-            opt_param = x0.copy()
-
-        with gzip.open("../fit_results/logs/optim_%d.pickle.gz"%slurm_index, "wb") as f:
-            pickle.dump(log, f)
-
-        f = open("../fit_results/current_best/cost/%d.txt"%slurm_index,"w")
-        f.write(str(lowest_cost) + "\n")
-        f.close()
-
-        f = open("../fit_results/current_best/cost_dict/%d.txt"%slurm_index,"w")
-        f.write(",".join(list(cost_dict.keys())) + "\n")
-        f.write(",".join(np.array(list(cost_dict.values())).astype(str)) + "\n")
-        f.close()
-
-        f = open("../fit_results/current_best/log_index/%d.txt"%slurm_index,"w")
-        f.write(str(log_index) + "\n")
-        f.close()
-
-        f = open("../fit_results/current_best/opt_param/%d.txt"%slurm_index,"w")
-        f.write(",".join(list(opt_param.astype(str))) + "\n")
-        f.close()
 
 
