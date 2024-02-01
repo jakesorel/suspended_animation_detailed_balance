@@ -127,7 +127,7 @@ if __name__ == "__main__":
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
     # log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
-    log10_fit_params = -0.9627218829113195,-0.6172812371817379,0.9815126177516549,-2.0140863371222135,-1.7734415938605252,-3.227680055756829,-1.9999178192080462,-2.4522420610629982#-0.42058710970725877,-0.44215836539676134,-3.488089490623768,-1.6533043282502522,-1.9037418895830336,-3.0267107614309365,-0.7843690173044751,-2.4764441833803073
+    log10_fit_params = -0.3896903892685587,-0.5739234799743005,-3.1814431908113283,-1.7398119848635227,-1.5305934981117235,-2.978845077912505,-0.8007672850055143,-2.304993910935548#-0.9627218829113195,-0.6172812371817379,0.9815126177516549,-2.0140863371222135,-1.7734415938605252,-3.227680055756829,-1.9999178192080462,-2.4522420610629982#-0.42058710970725877,-0.44215836539676134,-3.488089490623768,-1.6533043282502522,-1.9037418895830336,-3.0267107614309365,-0.7843690173044751,-2.4764441833803073
     # log10_fit_params = 0.6818369651315654, 0.6172107604360781, -3.5704303265353303, -1.398565895411668, -1.5221201521849879, -2.595543105585369, -0.15758240198409607, -2.356709953803964
     @exit_after(100)
     def run_simulation(log10_fit_params,log):
@@ -137,6 +137,7 @@ if __name__ == "__main__":
             assert (nm in _param_dict) or (nm in _anoxia_dict), "Names incorrect"
             if nm in _param_dict:
                 _param_dict[nm] = 10.0**(log10_fit_params[i])
+                print(nm,10.0**(log10_fit_params[i]))
             else:
                 _anoxia_dict[nm] = 10.0**(log10_fit_params[i])
 
@@ -259,18 +260,18 @@ if __name__ == "__main__":
         ##Assemble costs
         cost_dict = {}
 
-        cost_dict["AnteriorConc"] = np.abs(np.nanmean((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
-        cost_dict["PosteriorConc"] = np.abs(np.nanmean((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
-        cost_dict["ASI"] = np.abs(np.nanmean((_df["ASI_new_model"] - _df["ASI_new"])))
+        cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
+        cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
+        cost_dict["ASI"] = np.nanmean(np.abs((_df["ASI_new_model"] - _df["ASI_new"])))
 
         for key in ground_truths.keys():
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])
 
         ##Weight costs
 
-        cost_weighting = {"AnteriorConc":4,
-                          "PosteriorConc":4,
-                          "ASI": 4,
+        cost_weighting = {"AnteriorConc":1,
+                          "PosteriorConc":1,
+                          "ASI": 100,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"],
