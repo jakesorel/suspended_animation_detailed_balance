@@ -127,7 +127,7 @@ if __name__ == "__main__":
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
     # log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
-    log10_fit_params = -0.3896903892685587,-0.5739234799743005,-3.1814431908113283,-1.7398119848635227,-1.5305934981117235,-2.978845077912505,-0.8007672850055143,-2.304993910935548#-0.9627218829113195,-0.6172812371817379,0.9815126177516549,-2.0140863371222135,-1.7734415938605252,-3.227680055756829,-1.9999178192080462,-2.4522420610629982#-0.42058710970725877,-0.44215836539676134,-3.488089490623768,-1.6533043282502522,-1.9037418895830336,-3.0267107614309365,-0.7843690173044751,-2.4764441833803073
+    log10_fit_params = -0.5025882727372668,-0.04647437753987618,-0.22315340738762046,-1.8403063070463137,-1.7416471327651348,-2.633704027624373,-1.8723887794528828,-2.477
     # log10_fit_params = 0.6818369651315654, 0.6172107604360781, -3.5704303265353303, -1.398565895411668, -1.5221201521849879, -2.595543105585369, -0.15758240198409607, -2.356709953803964
     @exit_after(100)
     def run_simulation(log10_fit_params,log):
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         stagesimpleRNAi_to_index = {'early maint._ctrlRNAi':0,
                                     'late maint._ctrlRNAi':1,
                                     'early maint._cdc42RNAi':2,
-                                    'late maint._cdc42RNAi':2}
+                                    'late maint._cdc42RNAi':3}
 
         _df = df.copy()
         _df["pol_model"] = [pol_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
@@ -292,24 +292,24 @@ if __name__ == "__main__":
                        "anoxia_dict":_anoxia_dict}
 
         fig, ax = plt.subplots()
-        ax.plot(polarity_preNEBD["C_pol"])
-        ax.plot(polarity_postNEBD["C_pol"])
-        ax.plot(polarity_preNEBD_KD["C_pol"])
-        ax.plot(polarity_postNEBD_KD["C_pol"])
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD["C_pol"])
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"])
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD_KD["C_pol"])
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"])
         fig.show()
 
         fig, ax = plt.subplots()
         ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
         ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
-        ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
-        ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
+        # ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
+        # ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
         fig.show()
 
         fig, ax = plt.subplots()
         ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
         ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
-        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
-        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
+        # ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
+        # ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
         ax.legend()
         fig.show()
         return cost

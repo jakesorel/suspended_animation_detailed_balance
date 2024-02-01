@@ -99,7 +99,7 @@ if __name__ == "__main__":
     t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
-                   'anoxia': {"dt": 10, "tfin": 6600.}}
+                   'anoxia': {"dt": 10, "tfin": 3720.}}
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
@@ -134,8 +134,14 @@ if __name__ == "__main__":
 
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
+    df_out = pd.read_csv("../data/intensities_processed.csv")
+    asi_norm = np.zeros((2,2,12))
+    for i, RNAi in enumerate(["ctrlRNAi","cdc42RNAi"]):
+        for j, NEBD in enumerate(["early maint.","late maint."]):
+            dfi = df_out[(df_out["RNAi"]==RNAi)*(df_out["StageSimple"]==NEBD)]
+            asi_norm[i,j] = dfi["ASINorm2tot1"].values
 
-    @exit_after(100)
+    @exit_after(500)
     def run_simulation(log10_fit_params,log):
         _param_dict = param_dict.copy()
         _anoxia_dict = anoxia_dict.copy()
@@ -214,69 +220,70 @@ if __name__ == "__main__":
         ######
         # Processing data
         ######
-
-        t = sim.t_evals["anoxia"]/60
-        pol_interps = [interp1d(t,c_pol) for c_pol in
-                       [polarity_preNEBD["C_pol"],
-                        polarity_postNEBD["C_pol"],
-                        polarity_preNEBD_KD["C_pol"],
-                        polarity_postNEBD_KD["C_pol"]]]
-
-        PAR3_A_interps = [interp1d(t,c_t[0]) for c_t in
-                          [sim_values_anoxia_preNEBD["C_t"],
-                           sim_values_anoxia_postNEBD["C_t"],
-                           sim_values_anoxia_preNEBD_KD["C_t"],
-                           sim_values_anoxia_postNEBD_KD["C_t"]]]
-
-        PAR3_P_interps = [interp1d(t,c_t[1]) for c_t in
-                          [sim_values_anoxia_preNEBD["C_t"],
-                           sim_values_anoxia_postNEBD["C_t"],
-                           sim_values_anoxia_preNEBD_KD["C_t"],
-                           sim_values_anoxia_postNEBD_KD["C_t"]]]
-
-        stagesimpleRNAi_to_index = {'early maint._ctrlRNAi':0,
-                                    'late maint._ctrlRNAi':1,
-                                    'early maint._cdc42RNAi':2,
-                                    'late maint._cdc42RNAi':3}
-
-        _df = df.copy()
-        _df["pol_model"] = [pol_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-        _df["PAR3_A_model"] = [PAR3_A_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-        _df["PAR3_P_model"] = [PAR3_P_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-
-
-        MeanMembAntNorm, MeanMembPostNorm, ASI_norm = np.zeros(len(df)), np.zeros(len(df)), np.zeros(len(df))
-        for emb in _df["EmbryoID"].unique():
-            mask = _df["EmbryoID"] == emb
-            dfi = _df[mask]
-            MeanMembTot = (dfi["PAR3_A_model"] + dfi["PAR3_P_model"]) / 2
-            t0_mask = dfi["TimeMin"] < 5
-            MeanMembTot = MeanMembTot[t0_mask].values[0] ##normalise total intensity by first frame
-            MeanMembAntNorm[mask] = (dfi["PAR3_A_model"]) / MeanMembTot
-            MeanMembPostNorm[mask] = (dfi["PAR3_P_model"]) / MeanMembTot
-            asi = (dfi["PAR3_A_model"] - dfi["PAR3_P_model"]) / (dfi["PAR3_A_model"] + dfi["PAR3_P_model"])
-            ASI_norm[mask] = asi / asi[t0_mask].mean() ##for consistency, normalise by < 5 mins
-
-        _df["MeanMembAntNorm_model"] = MeanMembAntNorm
-        _df["MeanMembPostNorm_model"] = MeanMembPostNorm
-        _df["ASI_new_model"] = ASI_norm
+        #
+        # t = sim.t_evals["anoxia"]/60
+        # pol_interps = [interp1d(t,c_pol) for c_pol in
+        #                [polarity_preNEBD["C_pol"],
+        #                 polarity_postNEBD["C_pol"],
+        #                 polarity_preNEBD_KD["C_pol"],
+        #                 polarity_postNEBD_KD["C_pol"]]]
+        #
+        # PAR3_A_interps = [interp1d(t,c_t[0]) for c_t in
+        #                   [sim_values_anoxia_preNEBD["C_t"],
+        #                    sim_values_anoxia_postNEBD["C_t"],
+        #                    sim_values_anoxia_preNEBD_KD["C_t"],
+        #                    sim_values_anoxia_postNEBD_KD["C_t"]]]
+        #
+        # PAR3_P_interps = [interp1d(t,c_t[1]) for c_t in
+        #                   [sim_values_anoxia_preNEBD["C_t"],
+        #                    sim_values_anoxia_postNEBD["C_t"],
+        #                    sim_values_anoxia_preNEBD_KD["C_t"],
+        #                    sim_values_anoxia_postNEBD_KD["C_t"]]]
+        #
+        # stagesimpleRNAi_to_index = {'early maint._ctrlRNAi':0,
+        #                             'late maint._ctrlRNAi':1,
+        #                             'early maint._cdc42RNAi':2,
+        #                             'late maint._cdc42RNAi':3}
+        #
+        # _df = df.copy()
+        # _df["pol_model"] = [pol_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
+        # _df["PAR3_A_model"] = [PAR3_A_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
+        # _df["PAR3_P_model"] = [PAR3_P_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
+        #
+        #
+        # MeanMembAntNorm, MeanMembPostNorm, ASI_norm = np.zeros(len(df)), np.zeros(len(df)), np.zeros(len(df))
+        # for emb in _df["EmbryoID"].unique():
+        #     mask = _df["EmbryoID"] == emb
+        #     dfi = _df[mask]
+        #     MeanMembTot = (dfi["PAR3_A_model"] + dfi["PAR3_P_model"]) / 2
+        #     t0_mask = dfi["TimeMin"] < 5
+        #     MeanMembTot = MeanMembTot[t0_mask].values[0] ##normalise total intensity by first frame
+        #     MeanMembAntNorm[mask] = (dfi["PAR3_A_model"]) / MeanMembTot
+        #     MeanMembPostNorm[mask] = (dfi["PAR3_P_model"]) / MeanMembTot
+        #     asi = (dfi["PAR3_A_model"] - dfi["PAR3_P_model"]) / (dfi["PAR3_A_model"] + dfi["PAR3_P_model"])
+        #     ASI_norm[mask] = asi / asi[t0_mask].mean() ##for consistency, normalise by < 5 mins
+        #
+        # _df["MeanMembAntNorm_model"] = MeanMembAntNorm
+        # _df["MeanMembPostNorm_model"] = MeanMembPostNorm
+        # _df["ASI_new_model"] = ASI_norm
 
 
         ##Assemble costs
         cost_dict = {}
 
-        cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
-        cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
-        cost_dict["ASI"] = np.nanmean(np.abs((_df["ASI_new_model"] - _df["ASI_new"])))
+        # cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
+        # cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
+        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[15::30][:12] - asi_norm.reshape(4,12)[i]) for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
+                        polarity_postNEBD["C_pol"],
+                        polarity_preNEBD_KD["C_pol"],
+                        polarity_postNEBD_KD["C_pol"]])]))
 
         for key in ground_truths.keys():
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])
 
         ##Weight costs
 
-        cost_weighting = {"AnteriorConc":1,
-                          "PosteriorConc":1,
-                          "ASI": 100,
+        cost_weighting = {"ASI": 1,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"],

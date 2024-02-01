@@ -29,7 +29,7 @@ dfi = df[df["EmbryoID"] == " 11Jun22_kk1216_ctrlRNAi_CH4_Stage2_postNEBD"]
 
 
 
-fig, ax = plt.subplots(2,len(df["RNAi"].unique()),figsize=(12,8))
+fig, ax = plt.subplots(2,len(df["RNAi"].unique()),figsize=(24,16))
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
     sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm",hue="StageSimple")
@@ -38,19 +38,42 @@ for i, rnai in enumerate(df["RNAi"].unique()):
     sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm",hue="StageSimple")
     sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm_model",hue="StageSimple")
 
-# sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+    # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
     ax[0,i].set_title(rnai)
 # ax.legend("off")
+
+# for axx in ax.ravel():
+    # axx.get_legend().remove()
+
 fig.show()
 
 
 
+
+df = _df
 fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new_model",hue="StageSimple")
     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
+    ax[i].get_legend().remove()
+    ax[i].set_title(rnai)
 
+# sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+
+# ax.legend("off")
+fig.show()
+
+
+
+df["PAR3_A_model"] =df["PAR3_A_model"].values.astype(float)
+df = _df
+fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
+for i, rnai in enumerate(df["RNAi"].unique()):
+    dfi = df[df["RNAi"] == rnai]
+    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="MeanMembAnt",hue="StageSimple")
+    # sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
+    # ax[i].get_legend().remove()
     ax[i].set_title(rnai)
 
 # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
@@ -112,7 +135,7 @@ for i in range(len(df_out)):
 
 df_out["ASINorm2tot1"] = ASINorm2tot1
 
-df_out.to_csv("../data/intensities_processed.csv")
+df_out.to_csv("/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/intensities_processed.csv")
 
 fig, ax = plt.subplots(1,2,sharey=True)
 for i, rnai in enumerate(df["RNAi"].unique()[[0,3]]):
