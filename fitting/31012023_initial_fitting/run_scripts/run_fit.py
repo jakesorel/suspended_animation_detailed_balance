@@ -85,7 +85,7 @@ if __name__ == "__main__":
                    'psi': 0.174,  ##check this!
                    'L': 134.6,
                    'k_AP': 1e1,
-                   'n_clust': 256,
+                   'n_clust': 64,
                     'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,
@@ -283,7 +283,7 @@ if __name__ == "__main__":
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"],
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
-                           "N_clusters":1/ground_truths["N_clusters"]
+                           "N_clusters":0
         }
 
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
