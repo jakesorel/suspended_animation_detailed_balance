@@ -181,8 +181,8 @@ if __name__ == "__main__":
         sim_values_postNEBD_KD = sim.extract_values(sim.y_postNEBD).copy()
         sim_values_anoxia_preNEBD_KD = sim.extract_values(sim.y_anoxia_preNEBD)
         sim_values_anoxia_postNEBD_KD = sim.extract_values(sim.y_anoxia_postNEBD)
-        polarity_preNEBD_KD = sim.get_polarity(sim_values_anoxia_preNEBD)
-        polarity_postNEBD_KD = sim.get_polarity(sim_values_anoxia_postNEBD)
+        polarity_preNEBD_KD = sim.get_polarity(sim_values_anoxia_preNEBD_KD)
+        polarity_postNEBD_KD = sim.get_polarity(sim_values_anoxia_postNEBD_KD)
 
         print("sims complete")
         ###########
@@ -347,10 +347,10 @@ if __name__ == "__main__":
 
     log10_fit_param_lims = {'k_onA':[-4,1],
                           'k_offA':[-0.7,0.7],
-                          'k_onB_c':[-4,1],
+                          'k_onB_c':[-3,2],
                           'kbind':[-4,2],
                           'kunbind':[-2,-1.3],
-                          'k_seq':[-4,2],
+                          'k_seq':[-2,2],
                           'k_rel_multiplier':[-2,0],
                           'kunbind_anoxia':[-2.477,-2.255]}
 

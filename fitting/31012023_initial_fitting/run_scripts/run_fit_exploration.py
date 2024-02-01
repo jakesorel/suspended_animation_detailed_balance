@@ -127,8 +127,8 @@ if __name__ == "__main__":
     fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
 
     # log10_fit_params = 0.019869329620044375,-0.08889324658521658,-2.524063604721243,-1.6789794215314648,-1.7409152230202123,-3.546668443531226,-1.4140610175649262,-2.4739706879863643
-    log10_fit_params = -0.5025882727372668,-0.04647437753987618,-0.22315340738762046,-1.8403063070463137,-1.7416471327651348,-2.633704027624373,-1.8723887794528828,-2.477
-    # log10_fit_params = 0.6818369651315654, 0.6172107604360781, -3.5704303265353303, -1.398565895411668, -1.5221201521849879, -2.595543105585369, -0.15758240198409607, -2.356709953803964
+    # log10_fit_params = -0.5025882727372668,-0.04647437753987618,-0.22315340738762046,-1.8403063070463137,-1.7416471327651348,-2.633704027624373,-1.8723887794528828,-2.477
+    log10_fit_params = -1.8986397700191762,0.45621535471779157,1.0,-1.7936334514047356,-1.9999883997165562,-0.6500876100820274,-0.624907505756747,-2.4516408198077393
     @exit_after(100)
     def run_simulation(log10_fit_params,log):
         _param_dict = param_dict.copy()
@@ -170,8 +170,8 @@ if __name__ == "__main__":
         sim_values_postNEBD_KD = sim.extract_values(sim.y_postNEBD).copy()
         sim_values_anoxia_preNEBD_KD = sim.extract_values(sim.y_anoxia_preNEBD)
         sim_values_anoxia_postNEBD_KD = sim.extract_values(sim.y_anoxia_postNEBD)
-        polarity_preNEBD_KD = sim.get_polarity(sim_values_anoxia_preNEBD)
-        polarity_postNEBD_KD = sim.get_polarity(sim_values_anoxia_postNEBD)
+        polarity_preNEBD_KD = sim.get_polarity(sim_values_anoxia_preNEBD_KD)
+        polarity_postNEBD_KD = sim.get_polarity(sim_values_anoxia_postNEBD_KD)
 
         ###########
         # Data comparison
@@ -293,23 +293,23 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots()
         ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD["C_pol"])
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"])
+        # ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"])
         ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD_KD["C_pol"])
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"])
+        # ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"])
         fig.show()
 
         fig, ax = plt.subplots()
-        ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
-        ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
-        # ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
-        # ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
+        # ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
+        # ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
+        ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
+        ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
         fig.show()
 
         fig, ax = plt.subplots()
-        ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
-        ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
-        # ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
-        # ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
+        # ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
+        # ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
+        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
+        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
         ax.legend()
         fig.show()
         return cost
