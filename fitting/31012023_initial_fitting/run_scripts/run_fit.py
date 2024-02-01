@@ -296,6 +296,7 @@ if __name__ == "__main__":
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
         cost = cost_weighted.sum()
 
+
         current_log = {"log10_fit_params":log10_fit_params,
                        "cost":cost,
                        "cost_dict":cost_dict,
@@ -305,7 +306,7 @@ if __name__ == "__main__":
         logger["log"].append(current_log)
         # print(model_prediction_ground_truths)
 
-        logger["costs"] = np.array([dct["cost"] for dct in log])
+        logger["costs"] = np.array([dct["cost"] for dct in logger["log"]])
         logger["log_index"] = np.nanargmin(logger["costs"])
         logger["cost_dict"] = logger["log"][logger["log_index"]]["cost_dict"]
         logger["lowest_cost"] = logger["costs"][logger["log_index"]]
@@ -334,11 +335,12 @@ if __name__ == "__main__":
             f = open("../fit_results/current_best/opt_param/%d.txt"%slurm_index,"w")
             f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
             f.close()
+            print(cost)
         return cost
 
-    def _run_simulation(log10_fit_params,log):
+    def _run_simulation(log10_fit_params,logger):
         try:
-            return run_simulation(log10_fit_params,log)
+            return run_simulation(log10_fit_params,logger)
         except:
             return 1e5
 
