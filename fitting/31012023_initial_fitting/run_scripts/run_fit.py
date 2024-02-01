@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
     log = []
     res = None
-    n_iter = int(1e6)
+    n_iter = int(1e5)
     lowest_cost = 1e9
     cost_dict = None
     opt_param = None
