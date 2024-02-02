@@ -69,14 +69,14 @@ if __name__ == "__main__":
 
     param_dict = {'D_A': 0.2,##ADJUST
                   "D_B":0.28,
-                   'D_C': 0.002,  ##ADJUST
+                   'D_C': 0.001,  ##ADJUST
                    'k_onA': 1e-3,
-                   'k_offA': 5e-3,
+                   'k_offA': 1.,
                    'k_onB_c': 1e-3,
                    'k_offB_f': 5.4e-3,
                    'k_offB_c': 5.4e-3,
                    'kbind': 0.051794745,
-                   'kunbind': 0.02,
+                   'kunbind': 1/30,
                     "kunbind_postNEBD": 0.1,
                    'k_seq': 0.0071968567,
                    'k_rel': 0.01,
@@ -87,14 +87,14 @@ if __name__ == "__main__":
                    'L': 134.6,
                    'k_AP': 1e1,
                    'n_clust': 64,
-                    'i0':3,
+                    'i0':5,
                     'advection_fraction':0.99,
                   "tau_pol":60,
                   "tau_NEBD":60,
                   "tau_anox":600}
 
     anoxia_dict = {"k_rel_multiplier": 1.0,
-                   "kunbind_anoxia": 0.002,
+                   "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
 
     t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     df["MeanMembPostNorm"] = MeanMembPostNorm
     df["ASI_new"] = ASI_norm
 
-    fit_param_names = ['k_onA', 'k_offA', 'k_onB_c', 'kbind', 'kunbind', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier', 'kunbind_anoxia']
+    fit_param_names = ['k_onA', 'k_onB_c', 'kbind', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier']
 
     df_out = pd.read_csv("../data/intensities_processed.csv")
     asi_norm = np.zeros((2,2,12))
@@ -293,7 +293,7 @@ if __name__ == "__main__":
 
         ##Weight costs
 
-        cost_weighting = {"ASI": 1,
+        cost_weighting = {"ASI": 10,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
@@ -372,16 +372,21 @@ if __name__ == "__main__":
     """
 
     log10_fit_param_lims = {'k_onA':[-3,1],
-                          'k_offA':[-0.7,0.7],
                           'k_onB_c':[-3,2],
-                          'kbind':[-2,2],
-                          'kunbind':[-2,-1.3],
-                          'k_rel':[-3,2],
+                          'kbind':[-np.infty,np.infty],
+                          'k_rel':[-np.infty,np.infty],
                           'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
-                          'k_rel_multiplier':[-2,0],
-                          'kunbind_anoxia':[-2.477,-2.255]}
+                          'k_rel_multiplier':[-2,0]}
+    log10_fit_param_lims_init = log10_fit_param_lims.copy()
+    for key,val in log10_fit_param_lims_init.items():
+        mn, mx = val
+        if np.isinf(mn):
+            mn = -2
+        if np.isinf(mx):
+            mx = 2
+        log10_fit_param_lims_init[key] = [mn,mx]
 
-    log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims[nm]) for nm in fit_param_names])
+    log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
     log10_fit_params_bounds = np.array([log10_fit_param_lims[nm] for nm in fit_param_names])
 
     logger = {"log":[],
@@ -390,60 +395,60 @@ if __name__ == "__main__":
               "opt_param":None,
               "log_index":None}
 
-    res = None
-    n_iter = int(1e5)
+    # res = None
+    # n_iter = int(1e5)
     lowest_cost = 1e9
     x0 = log10_fit_params_init
-    for i in range(n_iter):
-        if res is None:
-            res = minimize(_run_simulation,
-                     x0,
-                     args=(logger,),
-                     method="Nelder-Mead",
-                     bounds=log10_fit_params_bounds,
-                     options={"maxiter":500,"return_all":True})
-        else:
-            res = minimize(_run_simulation,
-                           x0,
-                           args=(logger,),
-                           method="Nelder-Mead",
-                           bounds=log10_fit_params_bounds,
-                           options={"maxiter": 500, "return_all": True,"initial_simplex":res["final_simplex"][0]})
-
-        if res.fun < 1e4:##if simulation hits a solving wall or numerical error, randomise
-            x0 = res.x
-
-            logger["costs"] = np.array([dct["cost"] for dct in logger["log"]])
-            logger["log_index"] = np.nanargmin(logger["costs"])
-            logger["cost_dict"] = logger["log"][logger["log_index"]]["cost_dict"]
-            logger["lowest_cost"] = logger["costs"][logger["log_index"]]
-            logger["opt_param"] = logger["log"][logger["log_index"]]["log10_fit_params"]
-
-            with gzip.open("../fit_results/logs/optim_%d.pickle.gz" % slurm_index, "wb") as f:
-                pickle.dump(logger["log"], f)
-
-            f = open("../fit_results/current_best/cost/%d.txt" % slurm_index, "w")
-            f.write(str(logger["lowest_cost"]) + "\n")
-            f.close()
-
-            f = open("../fit_results/current_best/cost_dict/%d.txt" % slurm_index, "w")
-            f.write(",".join(list(logger["cost_dict"].keys())) + "\n")
-            f.write(",".join(np.array(list(logger["cost_dict"].values())).astype(str)) + "\n")
-            f.close()
-
-            f = open("../fit_results/current_best/log_index/%d.txt" % slurm_index, "w")
-            f.write(str(logger["log_index"]) + "\n")
-            f.close()
-
-            f = open("../fit_results/current_best/opt_param/%d.txt" % slurm_index, "w")
-            f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
-            f.close()
-        else:
-            idx = int(np.random.random()*len(fit_param_names))
-            chosen_mutated = fit_param_names[idx]
-            print("Mutating %s"%chosen_mutated)
-            new_val = np.random.uniform(*log10_fit_params_bounds[idx])
-            x0[idx] = new_val
+    # for i in range(n_iter):
+    #     if res is None:
+    res = minimize(_run_simulation,
+             x0,
+             args=(logger,),
+             method="Nelder-Mead",
+             bounds=log10_fit_params_bounds,
+             options={"return_all":True})
+        # else:
+        #     res = minimize(_run_simulation,
+        #                    x0,
+        #                    args=(logger,),
+        #                    method="Nelder-Mead",
+        #                    bounds=log10_fit_params_bounds,
+        #                    options={"return_all": True,"initial_simplex":res["final_simplex"][0]})
+        # #
+        # if res.fun < 1e4:##if simulation hits a solving wall or numerical error, randomise
+        #     x0 = res.x
+        #
+        #     logger["costs"] = np.array([dct["cost"] for dct in logger["log"]])
+        #     logger["log_index"] = np.nanargmin(logger["costs"])
+        #     logger["cost_dict"] = logger["log"][logger["log_index"]]["cost_dict"]
+        #     logger["lowest_cost"] = logger["costs"][logger["log_index"]]
+        #     logger["opt_param"] = logger["log"][logger["log_index"]]["log10_fit_params"]
+        #
+        #     with gzip.open("../fit_results/logs/optim_%d.pickle.gz" % slurm_index, "wb") as f:
+        #         pickle.dump(logger["log"], f)
+        #
+        #     f = open("../fit_results/current_best/cost/%d.txt" % slurm_index, "w")
+        #     f.write(str(logger["lowest_cost"]) + "\n")
+        #     f.close()
+        #
+        #     f = open("../fit_results/current_best/cost_dict/%d.txt" % slurm_index, "w")
+        #     f.write(",".join(list(logger["cost_dict"].keys())) + "\n")
+        #     f.write(",".join(np.array(list(logger["cost_dict"].values())).astype(str)) + "\n")
+        #     f.close()
+        #
+        #     f = open("../fit_results/current_best/log_index/%d.txt" % slurm_index, "w")
+        #     f.write(str(logger["log_index"]) + "\n")
+        #     f.close()
+        #
+        #     f = open("../fit_results/current_best/opt_param/%d.txt" % slurm_index, "w")
+        #     f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
+        #     f.close()
+        # else:
+        #     idx = int(np.random.random()*len(fit_param_names))
+        #     chosen_mutated = fit_param_names[idx]
+        #     print("Mutating %s"%chosen_mutated)
+        #     new_val = np.random.uniform(*log10_fit_params_bounds[idx])
+        #     x0[idx] = new_val
 
 
 
