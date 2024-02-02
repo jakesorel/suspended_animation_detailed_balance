@@ -76,7 +76,7 @@ if __name__ == "__main__":
                    'k_offB_f': 5.4e-3,
                    'k_offB_c': 5.4e-3,
                    'kbind_c': 0.051794745,
-                  'kbind_f': 0.051794745,
+                  'kbind_m': 0.051794745,
                    'kunbind': 1/30,
                     "kunbind_postNEBD": 0.1,
                    'k_seq': 0.0071968567,
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     df["MeanMembPostNorm"] = MeanMembPostNorm
     df["ASI_new"] = ASI_norm
 
-    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_f', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox"]
+    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox"]
 
     df_out = pd.read_csv("../data/intensities_processed.csv")
     asi_norm = np.zeros((2,2,12))
@@ -375,7 +375,7 @@ if __name__ == "__main__":
     log10_fit_param_lims = {'k_onA':[-3,1],
                           'k_onB_c':[-3,2],
                           'kbind_c':[-np.infty,np.infty],
-                          'kbind_f': [-np.infty, np.infty],
+                          'kbind_m': [-np.infty, np.infty],
                           'k_rel':[-np.infty,np.infty],
                           'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-2,0],
