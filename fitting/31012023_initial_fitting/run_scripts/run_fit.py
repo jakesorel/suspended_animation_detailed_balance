@@ -133,7 +133,7 @@ if __name__ == "__main__":
     df["MeanMembPostNorm"] = MeanMembPostNorm
     df["ASI_new"] = ASI_norm
 
-    fit_param_names = "k_onA,k_offA,k_onB_c,kbind,kunbind,k_seq,k_rel_multiplier,kunbind_anoxia".split(",")
+    fit_param_names = ['k_onA', 'k_offA', 'k_onB_c', 'kbind', 'kunbind', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier', 'kunbind_anoxia']
 
     df_out = pd.read_csv("../data/intensities_processed.csv")
     asi_norm = np.zeros((2,2,12))
