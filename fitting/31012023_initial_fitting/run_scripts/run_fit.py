@@ -80,9 +80,10 @@ if __name__ == "__main__":
                     "kunbind_postNEBD": 0.1,
                    'k_seq': 0.0071968567,
                    'k_rel': 0.01,
+                    'k_seq_multiplier':1.,
                    'A_tot': 1.0,
                    'B_tot': 4.666,
-                   'psi': 0.174,  ##check this!
+                   'psi': 0.174,
                    'L': 134.6,
                    'k_AP': 1e1,
                    'n_clust': 64,
@@ -151,11 +152,13 @@ if __name__ == "__main__":
                 _param_dict[nm] = 10.0**(log10_fit_params[i])
             else:
                 _anoxia_dict[nm] = 10.0**(log10_fit_params[i])
+        ##impose the constraint that k_onB_c > k_onB_f implicitly through this, given k_seq_multiplier > 1
+        _param_dict["k_seq"] = _anoxia_dict["k_rel_multiplier"]*_param_dict["k_rel"]*_param_dict["k_seq_multiplier"]
 
         _param_dict_KD = _param_dict.copy()
         _param_dict_KD["B_tot"] = 0
 
-        _param_dict_CR1_mutant = param_dict.copy()
+        _param_dict_CR1_mutant = _param_dict.copy()
         _param_dict_CR1_mutant["kbind"] = 0
 
         ##Simulate CR1 mutant
@@ -196,7 +199,7 @@ if __name__ == "__main__":
         preNEBD_membrane_frac = sim_values_polarisation["A_membrane_frac"][-1]
         postNEBD_membrane_frac = sim_values_postNEBD["A_membrane_frac"][-1]
         surface_area = 4415.84
-        N_clusters = surface_area*sim_values_pre_polarisation["p_t"][param_dict["i0"]:,:,-1].sum(axis=0).mean(axis=0) #Cluster is defined as an oligomer greater than critical level
+        N_clusters = surface_area*sim_values_pre_polarisation["p_t"][_param_dict["i0"]:,:,-1].sum(axis=0).mean(axis=0) #Cluster is defined as an oligomer greater than critical level
 
         model_prediction_ground_truths \
             = {"CR1_membrane_frac":CR1_membrane_frac,
@@ -282,6 +285,12 @@ if __name__ == "__main__":
         for key in ground_truths.keys():
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])**2
 
+        ##impose some minimum concentration
+        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_polarisation_KD["C_t"][0,-1]-0.1)*5)
+        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_postNEBD_KD["C_t"][0,-1]-0.1)*5)
+        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_polarisation["C_t"][0,-1]-0.1)*5)
+        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_postNEBD_KD["C_t"][0,-1]-0.1)*5)
+
         ##Weight costs
 
         cost_weighting = {"ASI": 1,
@@ -291,7 +300,11 @@ if __name__ == "__main__":
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
-                           "N_clusters":1/ground_truths["N_clusters"]**2
+                           "N_clusters":1/ground_truths["N_clusters"]**2,
+                          "preNEBD_minconc":1,
+                          "postNEBD_minconc": 1,
+                          "preNEBD_KD_minconc": 1,
+                          "postNEBD_KD_minconc": 1,
         }
 
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
@@ -345,12 +358,26 @@ if __name__ == "__main__":
             return 1e5
 
 
-    log10_fit_param_lims = {'k_onA':[-4,1],
+    """
+    k_onB_f/k_onB_c = (k_rel_passive/k_seq)* (k_offB_f/k_offB_c)  ###enforces detailed balance.
+    We suppose that (k_offB_f/k_offB_c) = 1
+    so if we suppose that k_onB_f/k_onB_c < 1 
+    then k_rel_passive/k_seq < 1
+    i.e. k_seq > k_rel_passive
+    
+    i.e. k_seq = k_rel_passive*k_seq_multiplier 
+    i.e. k_seq = k_rel*k_rel_multiplier*k_seq_multiplier
+    where k_seq_multiplier > 1
+    
+    """
+
+    log10_fit_param_lims = {'k_onA':[-3,1],
                           'k_offA':[-0.7,0.7],
                           'k_onB_c':[-3,2],
-                          'kbind':[-4,2],
+                          'kbind':[-2,2],
                           'kunbind':[-2,-1.3],
-                          'k_seq':[-2,2],
+                          'k_rel':[-3,2],
+                          'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-2,0],
                           'kunbind_anoxia':[-2.477,-2.255]}
 

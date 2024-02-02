@@ -80,7 +80,7 @@ if __name__ == "__main__":
                    'psi': 0.174,  ##check this!
                    'L': 134.6,
                    'k_AP': 1e1,
-                   'n_clust': 256,
+                   'n_clust': 64,
                     'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,
@@ -301,17 +301,19 @@ if __name__ == "__main__":
         fig.show()
 
         fig, ax = plt.subplots()
-        ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
-        ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
-        ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
-        ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["m_average"][0])
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["m_average"][0])
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["m_average"][0])
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD_KD["m_average"][0])
+        ax.set(xlim=(0,60))
+
         fig.show()
 
         fig, ax = plt.subplots()
-        ax.plot(sim_values_anoxia_preNEBD["C_t"][1],label="pre")
-        ax.plot(sim_values_anoxia_postNEBD["C_t"][1],label="post")
-        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][1],label="preKD")
-        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][1],label="postKD")
+        ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
+        ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
+        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
+        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
         ax.legend()
         fig.show()
         return cost
@@ -398,4 +400,8 @@ if __name__ == "__main__":
         f.write(",".join(list(opt_param.astype(str))) + "\n")
         f.close()
 
+
+"""
+Fits appear to find optima where the 
+"""
 
