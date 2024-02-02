@@ -152,8 +152,8 @@ class Simulate:
 
         self.normoxia_param_dict = param_dict
 
-        self.normoxia_param_dict["kbind_c"] = self.normoxia_param_dict["kbind"] * self.normoxia_param_dict["i0"]
-        self.normoxia_param_dict["kbind_m"] = self.normoxia_param_dict["kbind"]
+        # self.normoxia_param_dict["kbind_c"] = self.normoxia_param_dict["kbind"] * self.normoxia_param_dict["i0"]
+        # self.normoxia_param_dict["kbind_m"] = self.normoxia_param_dict["kbind"]
         self.normoxia_param_dict["kunbind_c"] = self.normoxia_param_dict["kunbind"]
         self.normoxia_param_dict["kunbind_m"] = self.normoxia_param_dict["kunbind"]
 

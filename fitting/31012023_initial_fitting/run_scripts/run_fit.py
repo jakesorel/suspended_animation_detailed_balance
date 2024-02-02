@@ -75,7 +75,8 @@ if __name__ == "__main__":
                    'k_onB_c': 1e-3,
                    'k_offB_f': 5.4e-3,
                    'k_offB_c': 5.4e-3,
-                   'kbind': 0.051794745,
+                   'kbind_c': 0.051794745,
+                  'kbind_f': 0.051794745,
                    'kunbind': 1/30,
                     "kunbind_postNEBD": 0.1,
                    'k_seq': 0.0071968567,
@@ -87,7 +88,7 @@ if __name__ == "__main__":
                    'L': 134.6,
                    'k_AP': 1e1,
                    'n_clust': 64,
-                    'i0':5,
+                    'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,
                   "tau_NEBD":60,
@@ -133,7 +134,7 @@ if __name__ == "__main__":
     df["MeanMembPostNorm"] = MeanMembPostNorm
     df["ASI_new"] = ASI_norm
 
-    fit_param_names = ['k_onA', 'k_onB_c', 'kbind', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier']
+    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_f', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox"]
 
     df_out = pd.read_csv("../data/intensities_processed.csv")
     asi_norm = np.zeros((2,2,12))
@@ -373,10 +374,12 @@ if __name__ == "__main__":
 
     log10_fit_param_lims = {'k_onA':[-3,1],
                           'k_onB_c':[-3,2],
-                          'kbind':[-np.infty,np.infty],
+                          'kbind_c':[-np.infty,np.infty],
+                          'kbind_f': [-np.infty, np.infty],
                           'k_rel':[-np.infty,np.infty],
                           'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
-                          'k_rel_multiplier':[-2,0]}
+                          'k_rel_multiplier':[-2,0],
+                            "tau_anox":[0,4]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key,val in log10_fit_param_lims_init.items():
         mn, mx = val

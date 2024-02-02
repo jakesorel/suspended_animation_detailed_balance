@@ -350,6 +350,19 @@ if __name__ == "__main__":
 
         fig, ax = plt.subplots(figsize=(5, 4))
         fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["p_t"][5:,1,:].sum(axis=0),label="pre")
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["p_t"][5:,1,:].sum(axis=0),label="post")
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["p_t"][5:,1,:].sum(axis=0),label="preKD")
+        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD_KD["p_t"][5:,1,:].sum(axis=0),label="postKD")
+        # ax.set(xlim=(0,60))
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+        ax.set(xlim=(0,60),xlabel="t (MIN)",ylabel="Cluster number")
+
+        fig.show()
+
+        fig, ax = plt.subplots(figsize=(5, 4))
+        fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
         ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["C_t"][0],label="pre")
         ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["C_t"][0],label="post")
         ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
