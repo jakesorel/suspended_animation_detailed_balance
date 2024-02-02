@@ -94,7 +94,7 @@ if __name__ == "__main__":
     t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
-                   'anoxia': {"dt": 10, "tfin": 6600.}}
+                   'anoxia': {"dt": 10, "tfin": 66000.}}
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
@@ -292,24 +292,26 @@ if __name__ == "__main__":
                        "anoxia_dict":_anoxia_dict}
 
         fig, ax = plt.subplots()
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD["C_pol"])
-        # ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"])
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD_KD["C_pol"])
-        # ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"])
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD["C_pol"],label="pre")
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"],label="post")
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD_KD["C_pol"],label="preKD")
+        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"],label="postKD")
+        ax.legend()
+        ax.set(xlim=(0,60))
         fig.show()
 
         fig, ax = plt.subplots()
-        # ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
-        # ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
+        ax.plot(sim_values_anoxia_preNEBD["m_average"][0])
+        ax.plot(sim_values_anoxia_postNEBD["m_average"][0])
         ax.plot(sim_values_anoxia_preNEBD_KD["m_average"][0])
         ax.plot(sim_values_anoxia_postNEBD_KD["m_average"][0])
         fig.show()
 
         fig, ax = plt.subplots()
-        # ax.plot(sim_values_anoxia_preNEBD["C_t"][0],label="pre")
-        # ax.plot(sim_values_anoxia_postNEBD["C_t"][0],label="post")
-        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
-        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
+        ax.plot(sim_values_anoxia_preNEBD["C_t"][1],label="pre")
+        ax.plot(sim_values_anoxia_postNEBD["C_t"][1],label="post")
+        ax.plot(sim_values_anoxia_preNEBD_KD["C_t"][1],label="preKD")
+        ax.plot(sim_values_anoxia_postNEBD_KD["C_t"][1],label="postKD")
         ax.legend()
         fig.show()
         return cost

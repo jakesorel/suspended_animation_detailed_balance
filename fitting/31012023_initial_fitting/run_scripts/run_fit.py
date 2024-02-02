@@ -274,24 +274,24 @@ if __name__ == "__main__":
 
         # cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
         # cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
-        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[15::30][:12] - asi_norm.reshape(4,12)[i]) for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
+        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[15::30][:12] - asi_norm.reshape(4,12)[i])**2 for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
                         polarity_postNEBD["C_pol"],
                         polarity_preNEBD_KD["C_pol"],
                         polarity_postNEBD_KD["C_pol"]])]))
 
         for key in ground_truths.keys():
-            cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])
+            cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])**2
 
         ##Weight costs
 
         cost_weighting = {"ASI": 1,
                           "CR1_membrane_frac":1,
                          "B_bound_frac":1,
-                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"],
-                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"],
+                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
+                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
-                           "N_clusters":1/ground_truths["N_clusters"]
+                           "N_clusters":1/ground_truths["N_clusters"]**2
         }
 
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
