@@ -7,7 +7,7 @@
 #SBATCH --output=../bash_out/for_loop_2nd_jobs_output.out
 #SBATCH --error=../bash_out/for_loop_2nd_jobs_error.out
 #SBATCH -n 1
-#SBATCH --partition=cpu
+#SBATCH --partition=ncpu
 #SBATCH --mem=100M
 
 
