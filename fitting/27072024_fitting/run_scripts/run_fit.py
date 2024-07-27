@@ -109,7 +109,7 @@ if __name__ == "__main__":
     slurm_index = int(sys.argv[1])
     print("Slurm index", slurm_index)
 
-    df = pd.read_csv("fitting/27072024_fitting/data/ASI_normalised.csv",index_col = 0 )
+    df = pd.read_csv("../data/ASI_normalised.csv",index_col = 0 )
 
     t_span_data = np.arange(0,62.,2.)
     t_span_data_used = np.arange(0,60.,2.)
