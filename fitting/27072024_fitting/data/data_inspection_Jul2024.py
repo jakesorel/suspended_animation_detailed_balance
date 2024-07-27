@@ -42,7 +42,7 @@ for key in df_meta.columns:
 
 df_combined["KD"] = [nm != "ctrlRNAi" for nm in df_combined["RNAi"]]
 
-df_combined.to_csv("fitting/27072024_fitting/data/ASI_normalised.csv")
+df_combined.to_csv("../data/ASI_normalised.csv")
 
 df_combined_melt = df_combined.melt(id_vars=tuple(df_meta.columns)+("KD",))
 
