@@ -68,9 +68,9 @@ if __name__ == "__main__":
     mkdir("../fit_results/current_best/log_index")
     mkdir("../fit_results/current_best/opt_param")
 
-    param_dict = {'D_A': 0.2,##ADJUST
+    param_dict = {'D_A': 0.2,
                   "D_B":0.28,
-                   'D_C': 0.001,  ##ADJUST
+                   'D_C': 0.001,
                    'k_onA': 1e-3,
                    'k_offA': 1.,
                    'k_onB_c': 1e-3,
@@ -109,50 +109,23 @@ if __name__ == "__main__":
     slurm_index = int(sys.argv[1])
     print("Slurm index", slurm_index)
 
-    ##import Joana's data
-    # df = pd.read_csv("../data/Intensities_ASI.csv")
-    df = pd.read_csv(
-        "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/Intensities_ASI.csv")
+    df = pd.read_csv("fitting/27072024_fitting/data/ASI_normalised.csv",index_col = 0 )
 
-    df["CellCycle_full"] = [nm.split("_")[-1] for nm in df["EmbryoID"]]
-    df["CellCycle"] = [nm if nm == "postNEBD" else "preNEBD" for nm in df["CellCycle_full"]]
-    df["CellCycle_RNAi"] = ["_".join((a, b)) for (a, b) in zip(df["CellCycle_full"], df["RNAi"])]
-    df["StageSimple_RNAi"] = ["_".join((a, b)) for (a, b) in zip(df["StageSimple"], df["RNAi"])]
+    t_span_data = np.arange(0,62.,2.)
+    t_span_data_used = np.arange(0,60.,2.)
+    asi_mat = df[t_span_data_used.astype(str)].values
+    is_kd = df["KD"].values
+    is_early = (df["Stage"] == "early maint.").values
 
-    MeanMembAntNorm, MeanMembPostNorm, ASI_norm = np.zeros(len(df)), np.zeros(len(df)), np.zeros(len(df))
-    for emb in df["EmbryoID"].unique():
-        mask = df["EmbryoID"] == emb
-        dfi = df[mask]
-        MeanMembTot = (dfi["MeanMembAnt"] + dfi["MeanMembPost"]) / 2
-        t0_mask = dfi["TimeMin"] < 5
-        MeanMembTot = MeanMembTot[t0_mask].values[0] ##normalise total intensity by first frame
-        MeanMembAntNorm[mask] = (dfi["MeanMembAnt"]) / MeanMembTot
-        MeanMembPostNorm[mask] = (dfi["MeanMembPost"]) / MeanMembTot
-        asi = (dfi["MeanMembAnt"] - dfi["MeanMembPost"]) / (dfi["MeanMembAnt"] + dfi["MeanMembPost"])
-        ASI_norm[mask] = asi / asi[t0_mask].mean() ##for consistency, normalise by < 5 mins
+    asi_norm = np.zeros((2,2,len(t_span_data_used)))
+    for i,kd in enumerate([False,True]):
+        for j,early in enumerate([True,False]):
+            mask = (is_kd==kd)*(is_early==early)
+            asi_norm[i,j] = asi_mat[mask].mean(axis=0)
 
-    df["MeanMembAntNorm"] = MeanMembAntNorm
-    df["MeanMembPostNorm"] = MeanMembPostNorm
-    df["ASI_new"] = ASI_norm
+
 
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox"]
-
-    # df_out = pd.read_csv("../data/intensities_processed.csv")
-    df_out = pd.read_csv("/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/intensities_processed.csv")
-    asi_norm = np.zeros((2,2,12))
-    for i, RNAi in enumerate(["ctrlRNAi","cdc42RNAi"]):
-        for j, NEBD in enumerate(["early maint.","late maint."]):
-            dfi = df_out[(df_out["RNAi"]==RNAi)*(df_out["StageSimple"]==NEBD)]
-            asi_norm[i,j] = dfi["ASINorm2tot1"].values
-    asi_norm_sd = np.zeros((2,2,12))
-    for i, RNAi in enumerate(["ctrlRNAi","cdc42RNAi"]):
-        for j, NEBD in enumerate(["early maint.","late maint."]):
-            dfi = df_out[(df_out["RNAi"]==RNAi)*(df_out["StageSimple"]==NEBD)]
-            asi_norm_sd[i,j] = dfi["ASINorm2tot1_sd"].values
-
-    # log10_fit_params[5] = 0
-    # log10_fit_params = np.array([-1.050493584108216,1.63651947231403,0.9261625800226447,-1.7560924548376229,-0.28199395098817404,0.00613384252927104,-0.4174558851266762,1.7949495130967463])
-    # log10_fit_params[6] = 0
 
     @exit_after(300)
     def run_simulation(log10_fit_params,logger):
@@ -202,94 +175,6 @@ if __name__ == "__main__":
         polarity_postNEBD_KD = sim.get_polarity(sim_values_anoxia_postNEBD_KD)
 
 
-        """REMOVE TESTING"""
-
-        fig, ax = plt.subplots(4,1,sharey=True)
-        for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
-                       polarity_postNEBD["C_pol"],
-                       polarity_preNEBD_KD["C_pol"],
-                       polarity_postNEBD_KD["C_pol"]]):
-            ax[i].plot(c_pol)
-            # ax[i].scatter(range(len(asi_norm.reshape(4, 12)[i])),asi_norm.reshape(4, 12)[i])
-        fig.show()
-
-        fig, ax = plt.subplots(4,1,sharey=True)
-        for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
-                       polarity_postNEBD["C_pol"],
-                       polarity_preNEBD_KD["C_pol"],
-                       polarity_postNEBD_KD["C_pol"]]):
-            ...
-            ax[i].plot(sim.t_evals["anoxia"]/60,c_pol)
-            ax[i].scatter(sim.t_evals["anoxia"][15::30][:12]/60,asi_norm.reshape(4, 12)[i])
-            smooth = 0.05
-            ticks_av = splrep(sim.t_evals["anoxia"][15::30][:12]/60, asi_norm.reshape(4, 12)[i], s=smooth)
-            ticks_std = splrep(sim.t_evals["anoxia"][15::30][:12]/60, asi_norm_sd.reshape(4, 12)[i], s=smooth)
-
-            # ax[k].plot(np.linspace(0,60,100), BSpline(*ticks_av)(np.linspace(0,60,100)))
-            ax[i].fill_between(np.linspace(0, 60, 100),
-                               BSpline(*ticks_av)(np.linspace(0, 60, 100)) - BSpline(*ticks_std)(np.linspace(0, 60, 100)),
-                               BSpline(*ticks_av)(np.linspace(0, 60, 100)) + BSpline(*ticks_std)(np.linspace(0, 60, 100)),
-                               color="blue", alpha=0.2)
-        for axx in ax:
-            axx.set(xlim=(2.5,57.5))
-        ax[0].set(ylabel="WT preNEBD\nPolarity")
-        ax[1].set(ylabel="WT postNEBD\nPolarity")
-        ax[2].set(ylabel="KO preNEBD\nPolarity")
-        ax[3].set(ylabel="KO postNEBD\nPolarity")
-        ax[3].set(xlabel="Time (mins)")
-        fig.show()
-
-
-
-        fig, ax = plt.subplots(figsize=(5,4))
-        fig.subplots_adjust(bottom=0.3,left=0.3,right=0.6,top=0.8)
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD["C_pol"],label="pre")
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD["C_pol"],label="post")
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_preNEBD_KD["C_pol"],label="preKD")
-        ax.plot(sim.t_evals["anoxia"]/60,polarity_postNEBD_KD["C_pol"],label="postKD")
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
-        ax.set(xlim=(0,60),ylim=(0.2,1.01),xlabel="t (MIN)",ylabel="Polarity")
-        fig.show()
-
-        fig, ax = plt.subplots(figsize=(5, 4))
-        fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["m_average"][0],label="pre")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["m_average"][0],label="post")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["m_average"][0],label="preKD")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD_KD["m_average"][0],label="postKD")
-        # ax.set(xlim=(0,60))
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
-
-        ax.set(xlim=(0,20),xlabel="t (MIN)",ylabel="Cluster size")
-
-        fig.show()
-
-        fig, ax = plt.subplots(figsize=(5, 4))
-        fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["p_t"][5:,0,:].sum(axis=0),label="pre")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["p_t"][5:,0,:].sum(axis=0),label="post")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["p_t"][5:,0,:].sum(axis=0),label="preKD")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD_KD["p_t"][5:,0,:].sum(axis=0),label="postKD")
-        # ax.set(xlim=(0,60))
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
-
-        ax.set(xlim=(0,60),xlabel="t (MIN)",ylabel="Cluster number")
-
-        fig.show()
-
-        fig, ax = plt.subplots(figsize=(5, 4))
-        fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD["C_t"][0],label="pre")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD["C_t"][0],label="post")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_preNEBD_KD["C_t"][0],label="preKD")
-        ax.plot(sim.t_evals["anoxia"]/60,sim_values_anoxia_postNEBD_KD["C_t"][0],label="postKD")
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
-        ax.set(xlim=(-10,60),xlabel="t (MIN)",ylabel=r"$[A]_{Anterior}$")
-
-        fig.show()
-        """END"""
-
-
         print("sims complete")
         ###########
         # Data comparison
@@ -324,63 +209,12 @@ if __name__ == "__main__":
                "N_clusters":400
             }
 
-        ######
-        # Processing data
-        ######
-        #
-        # t = sim.t_evals["anoxia"]/60
-        # pol_interps = [interp1d(t,c_pol) for c_pol in
-        #                [polarity_preNEBD["C_pol"],
-        #                 polarity_postNEBD["C_pol"],
-        #                 polarity_preNEBD_KD["C_pol"],
-        #                 polarity_postNEBD_KD["C_pol"]]]
-        #
-        # PAR3_A_interps = [interp1d(t,c_t[0]) for c_t in
-        #                   [sim_values_anoxia_preNEBD["C_t"],
-        #                    sim_values_anoxia_postNEBD["C_t"],
-        #                    sim_values_anoxia_preNEBD_KD["C_t"],
-        #                    sim_values_anoxia_postNEBD_KD["C_t"]]]
-        #
-        # PAR3_P_interps = [interp1d(t,c_t[1]) for c_t in
-        #                   [sim_values_anoxia_preNEBD["C_t"],
-        #                    sim_values_anoxia_postNEBD["C_t"],
-        #                    sim_values_anoxia_preNEBD_KD["C_t"],
-        #                    sim_values_anoxia_postNEBD_KD["C_t"]]]
-        #
-        # stagesimpleRNAi_to_index = {'early maint._ctrlRNAi':0,
-        #                             'late maint._ctrlRNAi':1,
-        #                             'early maint._cdc42RNAi':2,
-        #                             'late maint._cdc42RNAi':3}
-        #
-        # _df = df.copy()
-        # _df["pol_model"] = [pol_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-        # _df["PAR3_A_model"] = [PAR3_A_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-        # _df["PAR3_P_model"] = [PAR3_P_interps[stagesimpleRNAi_to_index[stagesimpleRNAi]](t) if stagesimpleRNAi in stagesimpleRNAi_to_index else np.nan for (stagesimpleRNAi,t) in zip(df["StageSimple_RNAi"],df["TimeMin"])]
-        #
-        #
-        # MeanMembAntNorm, MeanMembPostNorm, ASI_norm = np.zeros(len(df)), np.zeros(len(df)), np.zeros(len(df))
-        # for emb in _df["EmbryoID"].unique():
-        #     mask = _df["EmbryoID"] == emb
-        #     dfi = _df[mask]
-        #     MeanMembTot = (dfi["PAR3_A_model"] + dfi["PAR3_P_model"]) / 2
-        #     t0_mask = dfi["TimeMin"] < 5
-        #     MeanMembTot = MeanMembTot[t0_mask].values[0] ##normalise total intensity by first frame
-        #     MeanMembAntNorm[mask] = (dfi["PAR3_A_model"]) / MeanMembTot
-        #     MeanMembPostNorm[mask] = (dfi["PAR3_P_model"]) / MeanMembTot
-        #     asi = (dfi["PAR3_A_model"] - dfi["PAR3_P_model"]) / (dfi["PAR3_A_model"] + dfi["PAR3_P_model"])
-        #     ASI_norm[mask] = asi / asi[t0_mask].mean() ##for consistency, normalise by < 5 mins
-        #
-        # _df["MeanMembAntNorm_model"] = MeanMembAntNorm
-        # _df["MeanMembPostNorm_model"] = MeanMembPostNorm
-        # _df["ASI_new_model"] = ASI_norm
-
-
         ##Assemble costs
         cost_dict = {}
 
         # cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
         # cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
-        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[15::30][:12] - asi_norm.reshape(4,12)[i])**2 for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
+        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[:-12:12] - asi_norm.reshape(4,-1)[i])**2 for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
                         polarity_postNEBD["C_pol"],
                         polarity_preNEBD_KD["C_pol"],
                         polarity_postNEBD_KD["C_pol"]])]))

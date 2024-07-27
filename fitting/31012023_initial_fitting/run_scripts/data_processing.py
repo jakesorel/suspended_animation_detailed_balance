@@ -27,16 +27,16 @@ df["MeanMembPostNorm"] = MeanMembPostNorm
 df["ASI_new"] = ASI_norm
 dfi = df[df["EmbryoID"] == " 11Jun22_kk1216_ctrlRNAi_CH4_Stage2_postNEBD"]
 
-
+#
+#
+#
 
 fig, ax = plt.subplots(2,len(df["RNAi"].unique()),figsize=(24,16))
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
-    sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm",hue="StageSimple")
-    sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm_model",hue="StageSimple")
+    sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAnt",hue="StageSimple")
 
-    sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm",hue="StageSimple")
-    sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm_model",hue="StageSimple")
+    sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPost",hue="StageSimple")
 
     # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
     ax[0,i].set_title(rnai)
@@ -49,44 +49,62 @@ fig.show()
 
 
 
-
-df = _df
-fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
+fig, ax = plt.subplots(2,len(df["RNAi"].unique()),figsize=(24,16))
 for i, rnai in enumerate(df["RNAi"].unique()):
     dfi = df[df["RNAi"] == rnai]
-    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new_model",hue="StageSimple")
-    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
-    ax[i].get_legend().remove()
-    ax[i].set_title(rnai)
+    sns.lineplot(ax=ax[0,i],data=dfi,x="TimeMin",y="MeanMembAntNorm",hue="StageSimple")
 
-# sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+    sns.lineplot(ax=ax[1,i],data=dfi,x="TimeMin",y="MeanMembPostNorm",hue="StageSimple")
 
+    # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+    ax[0,i].set_title(rnai)
 # ax.legend("off")
+
+# for axx in ax.ravel():
+    # axx.get_legend().remove()
+
 fig.show()
-
-
-
-df["PAR3_A_model"] =df["PAR3_A_model"].values.astype(float)
-df = _df
-fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
-for i, rnai in enumerate(df["RNAi"].unique()):
-    dfi = df[df["RNAi"] == rnai]
-    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="MeanMembAnt",hue="StageSimple")
-    # sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
-    # ax[i].get_legend().remove()
-    ax[i].set_title(rnai)
-
-# sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
-
-# ax.legend("off")
-fig.show()
-
-
+#
+#
+#
+#
+# df = _df
+# fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
+# for i, rnai in enumerate(df["RNAi"].unique()):
+#     dfi = df[df["RNAi"] == rnai]
+#     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new_model",hue="StageSimple")
+#     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
+#     ax[i].get_legend().remove()
+#     ax[i].set_title(rnai)
+#
+# # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+#
+# # ax.legend("off")
+# fig.show()
+#
+#
+#
+# df["PAR3_A_model"] =df["PAR3_A_model"].values.astype(float)
+# df = _df
+# fig, ax = plt.subplots(1,len(df["RNAi"].unique()),figsize=(8,3),sharey=True)
+# for i, rnai in enumerate(df["RNAi"].unique()):
+#     dfi = df[df["RNAi"] == rnai]
+#     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="MeanMembAnt",hue="StageSimple")
+#     # sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASI_new",hue="StageSimple")
+#     # ax[i].get_legend().remove()
+#     ax[i].set_title(rnai)
+#
+# # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
+#
+# # ax.legend("off")
+# fig.show()
+#
+#
 fig, ax = plt.subplots(1,2,sharey=True)
 for i, rnai in enumerate(df["RNAi"].unique()[[0,3]]):
     dfi = df[df["RNAi"] == rnai]
     sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASINormtot1",hue="CellCycle_RNAi")
-    sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASINormtot1",hue="CellCycle_RNAi")
+    # sns.lineplot(ax=ax[i],data=dfi,x="TimeMin",y="ASINormtot1",hue="CellCycle_RNAi")
 
 # sns.lineplot(data=dfi,x="TimeMin",y="MeanMembPost",hue="EmbryoID")
 
@@ -102,7 +120,7 @@ t_mid = (time_points[1:] + time_points[:-1])/2
 ant_mem_mat = np.zeros((len(t_mid),len(rnai_vals),len(cellcycle_vals)))
 post_mem_mat = np.zeros((len(t_mid),len(rnai_vals),len(cellcycle_vals)))
 
-df_out = {"t":[],"RNAi":[],"CellCycle":[],"RNAi_CellCycle":[],"AntMemNorm":[],"PostMemNorm":[],"ASINormtot1":[],"StageSimple":[]}
+df_out = {"t":[],"RNAi":[],"CellCycle":[],"RNAi_CellCycle":[],"AntMemNorm":[],"PostMemNorm":[],"ASINormtot1":[],"StageSimple":[],"ASINormtot1_sd":[]}
 for i, t in enumerate(t_mid):
     for j, rnai in enumerate(rnai_vals):
         for k, cc in enumerate(cellcycle_vals):
@@ -118,6 +136,7 @@ for i, t in enumerate(t_mid):
             df_out["AntMemNorm"].append(dfi["MeanMembAntNorm"].mean())
             df_out["PostMemNorm"].append(dfi["MeanMembPostNorm"].mean())
             df_out["ASINormtot1"].append(dfi["ASINormtot1"].mean())
+            df_out["ASINormtot1_sd"].append(dfi["ASINormtot1"].std())
 
 
 
@@ -129,11 +148,15 @@ for state in df_out["RNAi_CellCycle"].unique():
     t0ASI[state] = dfit0["ASINormtot1"].values[0]
 
 ASINorm2tot1 = []
+ASINorm2tot1_sd = []
+
 for i in range(len(df_out)):
     dfi = df_out.iloc[i]
     ASINorm2tot1.append(dfi["ASINormtot1"]/t0ASI[dfi["RNAi_CellCycle"]])
+    ASINorm2tot1_sd.append(dfi["ASINormtot1_sd"]/t0ASI[dfi["RNAi_CellCycle"]])
 
 df_out["ASINorm2tot1"] = ASINorm2tot1
+df_out["ASINorm2tot1_sd"] = ASINorm2tot1_sd
 
 df_out.to_csv("/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/intensities_processed.csv")
 
