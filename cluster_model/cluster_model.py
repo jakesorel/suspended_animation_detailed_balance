@@ -269,7 +269,7 @@ class Simulate:
 
 
     def polarity(self, X_t):
-        return (X_t.max(axis=0) - X_t.min(axis=0)) / (X_t.max(axis=0) + X_t.min(axis=0))
+        return (X_t.max(axis=0) - X_t.min(axis=0)) / (X_t.max(axis=0) + X_t.min(axis=0)+1e-17)
 
     def extract_values(self, y):
         n_clust = self.normoxia_param_dict["n_clust"]
@@ -278,9 +278,9 @@ class Simulate:
         C_t = p_t * np.expand_dims(np.expand_dims((1 + np.arange(len(p_t))), axis=1), axis=1)
         C_t = C_t.sum(axis=0)
         B_t = b_t.sum(axis=0)
-        m_average = C_t/p_t.sum(axis=0)
-        b_frac = b_t[0]/B_t
-        d_frac = b_t[1]/B_t
+        m_average = C_t/(p_t.sum(axis=0)+1e-17)
+        b_frac = b_t[0]/(B_t + 1e-17)
+        d_frac = b_t[1]/(B_t + 1e-17)
         F_t = b_t[0]
         A_membrane_frac = self.normoxia_param_dict["psi"]*C_t.mean(axis=0)/self.normoxia_param_dict["A_tot"]
         B_membrane_frac = self.normoxia_param_dict["psi"]*B_t.mean(axis=0)/self.normoxia_param_dict["B_tot"]

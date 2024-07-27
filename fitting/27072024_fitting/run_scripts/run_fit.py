@@ -313,8 +313,8 @@ if __name__ == "__main__":
                           'kbind_c':[-np.infty,np.infty],
                           'kbind_m': [-np.infty, np.infty],
                           'k_rel':[-np.infty,np.infty],
-                          'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
-                          'k_rel_multiplier':[-2,0],
+                          'k_seq_multiplier':[0,3], ##to impose the k_onBf/konB_c constraint.
+                          'k_rel_multiplier':[-3,0],
                             "tau_anox":[0,4]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key,val in log10_fit_param_lims_init.items():
@@ -345,7 +345,8 @@ if __name__ == "__main__":
              args=(logger,),
              method="Nelder-Mead",
              bounds=log10_fit_params_bounds,
-             options={"return_all":True})
+             options={"return_all":True,"xatol":1e-9,"fatol":1e-9,"adaptive":True})
+    print("COMPLETED")
         # else:
         #     res = minimize(_run_simulation,
         #                    x0,
