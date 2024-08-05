@@ -223,10 +223,10 @@ if __name__ == "__main__":
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])**2
 
         ##impose some minimum concentration
-        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_polarisation_KD["C_t"][0,-1]-0.1)*5)
-        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_postNEBD_KD["C_t"][0,-1]-0.1)*5)
-        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_polarisation["C_t"][0,-1]-0.1)*5)
-        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_postNEBD_KD["C_t"][0,-1]-0.1)*5)
+        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD_KD["C_t"][0,-1])*5)
+        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD_KD["C_t"][0,-1])*5)
+        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD["C_t"][0,-1])*5)
+        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD["C_t"][0,-1])*5)
 
         ##Weight costs
 
