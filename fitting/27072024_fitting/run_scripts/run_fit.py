@@ -326,6 +326,11 @@ if __name__ == "__main__":
         log10_fit_param_lims_init[key] = [mn,mx]
 
     log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
+    df_log_fit = pd.read_csv("../fit_results_i64/current_best/opt_param_concatenated.csv", index_col=0,header=None)
+    log10_fit_params_inits = df_log_fit.values
+    log10_fit_params_init = log10_fit_params_inits[np.random.choice(np.arange(len(log10_fit_params_inits)))]
+
+
     log10_fit_params_bounds = np.array([log10_fit_param_lims[nm] for nm in fit_param_names])
 
     logger = {"log":[],

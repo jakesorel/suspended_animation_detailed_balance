@@ -224,10 +224,13 @@ param_names = "D_A,D_B,D_C,k_onA,k_offA,k_onB_c,k_offB_f,k_offB_c,kbind_c,kunbin
 
 params = np.array([anoxia_param_dict[nm] for nm in param_names])
 
-p_ss = get_steady_state_distribution(params, _param_dict["n_clust"], _param_dict["i0"], b_frac=0.5,A_cyto=0.9)
-plt.plot(p_ss)
-plt.show()
+b_frac=0.3
+A_cyto=0.3
+dt = 0.01
+state_j = _param_dict["i0"]
+p_ss = get_steady_state_distribution(params, _param_dict["n_clust"], _param_dict["i0"], b_frac=b_frac,A_cyto=A_cyto)
 
+T = generate_transition_matrix(p_ss,params,_param_dict["n_clust"], _param_dict["i0"], b_frac=b_frac,A_cyto=A_cyto,dt=dt)
 
 Tp = T.copy()
 Tp[state_j,:] = 0
@@ -235,10 +238,12 @@ Tp[state_j,state_j] = 1
 
 
 
-D_fin = np.array([np.linalg.matrix_power(Tp,i) for i in range(5000)])
+D_fin = np.array([np.linalg.matrix_power(Tp,i) for i in range(200)])
 
 x_fin_j = np.tensordot(np.eye(len(Tp)),D_fin,axes=(0,1))[...,state_j].T
 
 d_x_fin_j = (x_fin_j[1:] - x_fin_j[:-1])*dt
 
 mfpt = (d_x_fin_j*np.expand_dims(np.arange(len(d_x_fin_j)),1)*dt).sum(axis=0)/dt
+
+plt.plot(mfpt)
