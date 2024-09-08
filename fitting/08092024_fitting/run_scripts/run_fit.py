@@ -88,7 +88,7 @@ if __name__ == "__main__":
                    'psi': 0.174,
                    'L': 134.6,
                    'k_AP': 1e1,
-                   'n_clust': 256,
+                   'n_clust': 128,
                     'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,

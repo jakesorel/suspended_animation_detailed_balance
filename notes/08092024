@@ -1,0 +1,6 @@
+Identified a sign error in the main code.
+Rerun the entire fitting
+But the param scan code is working now, so should be directly run-able
+
+Note also I identified an error in the other simulation code, where some of the rescaled values were incorrect.
+-->> Do this today!
