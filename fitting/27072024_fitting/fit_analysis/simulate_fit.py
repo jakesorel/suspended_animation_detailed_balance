@@ -13,6 +13,7 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from cluster_model.cluster_model import Simulate
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import threading
 import matplotlib.pyplot as plt
 import matplotlib
@@ -184,4 +185,209 @@ if __name__ == "__main__":
     ax[0].set_title("ctrl (RNAi)")
     ax[1].set_title("aPAR (RNAi)")
     ax[1].set(xlabel="Time (min)")
+    for axx in ax:
+        axx.set(xlim=(0,58))
     fig.savefig("fitting/27072024_fitting/plots/fit.pdf")
+
+    ##Plot the cluster distribution
+
+    def make_extent(x_range, y_range, xscale="linear", yscale="linear", center=True):
+        if xscale == "log":
+            x_range = np.log10(x_range)
+        if yscale == "log":
+            y_range = np.log10(y_range)
+        if center is False:
+            extent = [x_range[0], x_range[-1] + x_range[1] - x_range[0], y_range[0],
+                      y_range[-1] + y_range[1] - y_range[0]]
+        else:
+            extent = [x_range[0] - (x_range[1] - x_range[0]) / 2, x_range[-1] + (x_range[1] - x_range[0]) / 2,
+                      y_range[0] - (y_range[1] - y_range[0]) / 2, y_range[-1] + (y_range[1] - y_range[0]) / 2]
+
+        aspect = (extent[1] - extent[0]) / (extent[3] - extent[2])
+        return extent, aspect
+
+
+
+    max_val = 0
+    fig, ax = plt.subplots(2,2)
+
+    for axx,sim_i,nm in zip(ax.ravel(),[sim_values_anoxia_preNEBD,
+                                     sim_values_anoxia_postNEBD,
+                                     sim_values_anoxia_preNEBD_KD,
+                                     sim_values_anoxia_postNEBD_KD],
+                            ["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"]):
+        im = sim_i["p_t"][:,:,:361]*np.expand_dims(np.arange(1,257),axis=(1,2))
+        if np.percentile(im,99.9) > max_val:
+            max_val = np.percentile(im,99.9)
+    fig, ax = plt.subplots(2,2)
+    for axx, sim_i, nm in zip(ax.ravel(), [sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD,
+                                           sim_values_anoxia_preNEBD_KD,
+                                           sim_values_anoxia_postNEBD_KD],
+                              ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
+        im = sim_i["p_t"][:, 0, :361] * np.expand_dims(np.arange(1, 257), 1)
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,100))
+        axx.imshow(np.flip(im[:100],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
+        axx.set(ylabel=nm)
+    fig.savefig("fitting/27072024_fitting/plots/aPAR anterior protein distribution.pdf")
+
+    fig, ax = plt.subplots(2,2)
+    for axx, sim_i, nm in zip(ax.ravel(), [sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD,
+                                           sim_values_anoxia_preNEBD_KD,
+                                           sim_values_anoxia_postNEBD_KD],
+                              ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
+        im = sim_i["p_t"][:, 1, :361] * np.expand_dims(np.arange(1, 257), 1)
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,100))
+        axx.imshow(np.flip(im[:100],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
+        axx.set(ylabel=nm)
+
+    fig.savefig("fitting/27072024_fitting/plots/aPAR posterior protein distribution.pdf")
+
+    fig, ax = plt.subplots(figsize=(4,4))
+
+    cax = ax.imshow(im, cmap=sns.color_palette("Spectral",as_cmap=True), vmin=0, vmax=max_val)
+
+    cbar = fig.colorbar(cax, ax=ax)
+
+    cbar.set_label('PAR3 mass concentration')
+
+    fig.savefig("fitting/27072024_fitting/plots/colorbar protein distribution.pdf")
+
+    ### plot other features
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD,
+                                           sim_values_anoxia_preNEBD_KD,
+                                           sim_values_anoxia_postNEBD_KD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["m_average"][0], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 20), xlabel="Time (min)", ylabel="Cluster size")
+
+    fig.savefig("fitting/27072024_fitting/plots/cluster size.pdf")
+
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD,
+                                           sim_values_anoxia_preNEBD_KD,
+                                           sim_values_anoxia_postNEBD_KD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["C_t"][0], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Anterior}$")
+
+    fig.savefig("fitting/27072024_fitting/plots/conc anterior.pdf")
+
+
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD,
+                                           sim_values_anoxia_preNEBD_KD,
+                                           sim_values_anoxia_postNEBD_KD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["C_t"][1], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Posterior}$")
+
+    fig.savefig("fitting/27072024_fitting/plots/conc posterior.pdf")
+
+
+    ##Without active feedback
+
+    _param_dict = param_dict.copy()
+    _anoxia_dict = anoxia_dict.copy()
+    for i, nm in enumerate(fit_param_names):
+        assert (nm in _param_dict) or (nm in _anoxia_dict), "Names incorrect"
+        if nm in _param_dict:
+            _param_dict[nm] = 10.0 ** (log10_fit_params[i])
+        else:
+            _anoxia_dict[nm] = 10.0 ** (log10_fit_params[i])
+    # _anoxia_dict["kunbind_anoxia"] = 1/30
+    _anoxia_dict["k_rel_multiplier"] = 1.
+
+    _anoxia_dict_preNEBD = _anoxia_dict.copy()
+    _anoxia_dict_postNEBD = _anoxia_dict.copy()
+    _anoxia_dict_preNEBD["kunbind_anoxia"] = 1/30
+    _anoxia_dict_postNEBD["kunbind_anoxia"] = 0.1
+
+
+    ##impose the constraint that k_onB_c > k_onB_f implicitly through this, given k_seq_multiplier > 1
+    _param_dict["k_seq"] = _anoxia_dict["k_rel_multiplier"] * _param_dict["k_rel"] * _param_dict["k_seq_multiplier"]
+
+    _param_dict_KD = _param_dict.copy()
+    _param_dict_KD["B_tot"] = 0
+
+    _param_dict_CR1_mutant = _param_dict.copy()
+    _param_dict_CR1_mutant["kbind"] = 0
+
+    ##Simulate WT, from pre and postNEBD
+    sim.initialise_param_dicts(_param_dict, _anoxia_dict_preNEBD)
+    sim.simulate_pre_and_post()
+    nof_polarity_preNEBD = sim.get_polarity( sim.extract_values(sim.y_anoxia_preNEBD))
+    sim.initialise_param_dicts(_param_dict, _anoxia_dict_postNEBD)
+    sim.simulate_pre_and_post()
+    nof_polarity_postNEBD = sim.get_polarity( sim.extract_values(sim.y_anoxia_postNEBD))
+
+
+    ##Simulate KD, from pre and postNEBD
+    sim.initialise_param_dicts(_param_dict_KD, _anoxia_dict_preNEBD)
+    sim.simulate_pre_and_post()
+    nof_polarity_preNEBD_KD = sim.get_polarity( sim.extract_values(sim.y_anoxia_preNEBD))
+    sim.initialise_param_dicts(_param_dict_KD, _anoxia_dict_postNEBD)
+    sim.simulate_pre_and_post()
+    nof_polarity_postNEBD_KD = sim.get_polarity( sim.extract_values(sim.y_anoxia_postNEBD))
+
+    col_dict = {1:"#ba3579",0:"#9772a0"}
+    col_dict_pastel = {1:"#B5839B",0:"#A69DAC"}
+
+    fig, ax = plt.subplots(1,2, sharey=True,figsize=(8.5,4))
+    for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
+                               polarity_postNEBD["C_pol"],
+                               polarity_preNEBD_KD["C_pol"],
+                               polarity_postNEBD_KD["C_pol"]]):
+        ...
+        ax[i//2].plot(sim.t_evals["anoxia"] / 60, c_pol,color=col_dict[i%2],alpha=0.4)
+        format_ax(fig, ax[i//2])
+    for i, c_pol in enumerate([nof_polarity_preNEBD["C_pol"],
+                               nof_polarity_postNEBD["C_pol"],
+                               nof_polarity_preNEBD_KD["C_pol"],
+                               nof_polarity_postNEBD_KD["C_pol"]]):
+        ...
+        ax[i//2].plot(sim.t_evals["anoxia"] / 60, c_pol,color=col_dict[i%2])
+        format_ax(fig, ax[i//2])
+    for axx in ax:
+        axx.set(xlim=(0, None),ylim=(0,None))
+        axx.set_yticks([0,0.5,1],labels=["0","0.5","1"])
+        axx.yaxis.grid(True)
+
+    ax[0].set(ylabel="ASI")
+    ax[0].set_title("ctrl (RNAi)")
+    ax[1].set_title("aPAR (RNAi)")
+    ax[1].set(xlabel="Time (min)")
+    for axx in ax:
+        axx.set(xlim=(0,58))
+    fig.savefig("fitting/27072024_fitting/plots/fit_without_active_feedback.pdf")
+
+    ###

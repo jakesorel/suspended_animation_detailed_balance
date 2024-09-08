@@ -3,11 +3,11 @@ import os
 
 sys.dont_write_bytecode = True
 
+SCRIPT_DIR = "../.."
+sys.path.append(os.path.dirname(SCRIPT_DIR))
 SCRIPT_DIR = "../../.."
 sys.path.append(os.path.dirname(SCRIPT_DIR))
-SCRIPT_DIR = "../../../.."
-sys.path.append(os.path.dirname(SCRIPT_DIR))
-SCRIPT_DIR = "../.."
+SCRIPT_DIR = ".."
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 from joblib import Parallel, delayed
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                   'psi': 0.174,
                   'L': 134.6,
                   'k_AP': 1e1,
-                  'n_clust': 64,
+                  'n_clust': 256,
                   'i0': 3,
                   'advection_fraction': 0.99,
                   "tau_pol": 60,

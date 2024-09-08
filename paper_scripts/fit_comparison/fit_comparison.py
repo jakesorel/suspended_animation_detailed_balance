@@ -20,8 +20,8 @@ def mkdir(nm):
 
 df_cost = pd.read_csv("paper_scripts/fit_comparison/out/df_cost.csv",index_col=0)
 
-plot_dir = "paper_scripts/fit_comaprison/plots/"
-mkdir("plot_dir")
+plot_dir = "paper_scripts/fit_comparison/plots/"
+mkdir(plot_dir)
 
 fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                    "tau_anox"]
@@ -57,4 +57,4 @@ format_ax(fig, ax)
 ax.set_title(nm)
 ax.set(xlabel=r"$log_{10}$"" Cost",ylabel="Density")
 fig.show()
-fig.savefig(plot_dir+"cost_histogram.pdf")
+fig.savefig(plot_dir+"cost_jointplot.pdf")

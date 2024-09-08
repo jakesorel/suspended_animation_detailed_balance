@@ -112,20 +112,28 @@ df["ASI_new"] = ASI_norm
 fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                    "tau_anox"]
 
-# df_out = pd.read_csv("../data/intensities_processed.csv")
-df_out = pd.read_csv(
-    "/Users/cornwaj/PycharmProjects/suspended_animation_detailed_balance/fitting/31012023_initial_fitting/data/intensities_processed.csv")
-asi_norm = np.zeros((2, 2, 12))
-for i, RNAi in enumerate(["ctrlRNAi", "cdc42RNAi"]):
-    for j, NEBD in enumerate(["early maint.", "late maint."]):
-        dfi = df_out[(df_out["RNAi"] == RNAi) * (df_out["StageSimple"] == NEBD)]
-        asi_norm[i, j] = dfi["ASINorm2tot1"].values
-asi_norm_sd = np.zeros((2, 2, 12))
-for i, RNAi in enumerate(["ctrlRNAi", "cdc42RNAi"]):
-    for j, NEBD in enumerate(["early maint.", "late maint."]):
-        dfi = df_out[(df_out["RNAi"] == RNAi) * (df_out["StageSimple"] == NEBD)]
-        asi_norm_sd[i, j] = dfi["ASINorm2tot1_sd"].values
 
+
+df = pd.read_csv("fitting/27072024_fitting/data/ASI_normalised.csv",index_col = 0 )
+
+t_span_data = np.arange(0,62.,2.)
+t_span_data_used = np.arange(0,60.,2.)
+asi_mat = df[t_span_data_used.astype(str)].values
+is_kd = df["KD"].values
+is_early = (df["Stage"] == "early maint.").values
+
+asi_norm = np.zeros((2,2,len(t_span_data_used)))
+for i,kd in enumerate([False,True]):
+    for j,early in enumerate([True,False]):
+        mask = (is_kd==kd)*(is_early==early)
+        asi_norm[i,j] = asi_mat[mask].mean(axis=0)
+
+
+asi_sd = np.zeros((2,2,len(t_span_data_used)))
+for i,kd in enumerate([False,True]):
+    for j,early in enumerate([True,False]):
+        mask = (is_kd==kd)*(is_early==early)
+        asi_sd[i,j] = asi_mat[mask].std(axis=0)
 
 
 
