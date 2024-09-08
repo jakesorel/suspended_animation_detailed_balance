@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
-    df = pd.read_csv("fitting/27072024_fitting/data/ASI_normalised.csv", index_col=0)
+    df = pd.read_csv("ASI_normalised.csv", index_col=0)
 
     t_span_data = np.arange(0, 62., 2.)
     t_span_data_used = np.arange(0, 60., 2.)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                        "tau_anox"]
 
-    log10_fit_params = pd.read_csv("fitting/27072024_fitting/fit_results/opt_param.csv")
+    log10_fit_params = pd.read_csv("opt_param.csv")
     log10_fit_params = log10_fit_params[fit_param_names].values.ravel()
 
     _param_dict = param_dict.copy()
