@@ -92,7 +92,9 @@ class OneDCluster(eqx.Module):
         k_minus_i_inc_active = k_minus_i + k_AP_p
         k_minus_ip1_inc_active = jnp.concatenate((k_minus_i_inc_active[1:], (jnp.array(((0., 0.),)))))
 
-        b_ad_load = K_plus_im1 * (_bm1 * p1 - pm1 * b1) - K_plus_i * p1 * _b
+        # b_ad_load = K_plus_im1 * (_bm1 * p1 - pm1 * b1) - K_plus_i * p1 * _b
+        b_ad_load = K_plus_im1 * (_bm1 * p1 + pm1 * b1) - K_plus_i * p1 * _b
+
         b_ad_unload = jnp.expand_dims(i, 1) * (k_minus_ip1_inc_active * _bp1 - k_minus_i_inc_active * _b)
 
         dtb1_add = - (K_plus_i * b1 * p)[:-1].sum() + (k_minus_i * _b)[1:].sum()
