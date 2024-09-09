@@ -132,11 +132,12 @@ def get_opt_kPA_mult(a_0_mult):
     k_PA = 2
     D_A, D_P = 0.28, 0.15
 
-    a_0, p_0 = 0.32, 0.7
+    a_0 = psi * k_onA / (k_offA + psi * k_onA)
+    p_0 = psi * k_onP / (k_offA + psi * k_onP)
     d_a = D_A / k_offA / L ** 2
-    d_p = D_P / k_offP / L ** 2
+    d_p = D_P / k_offA / L ** 2
     kappa_AP = k_AP * P_tot / (psi * k_offA)
-    kappa_PA = k_PA * A_tot ** 2 / (k_offP * psi ** 2)
+    kappa_PA = k_PA * A_tot ** 2 / (k_offA * psi ** 2)
 
     kappa_cue = 0.951  # Pre-factor "strength" of cue
     l_cue = 28.6 / L  # Length parameter for cue
@@ -182,11 +183,12 @@ def get_opt_kPA_mult(a_0_mult):
         k_PA = 2
         D_A, D_P = 0.28, 0.15
 
-        a_0, p_0 = 0.32*a_0_mult, 0.7
+        a_0 = psi * k_onA / (k_offA + psi * k_onA) * a_0_mult
+        p_0 = psi * k_onP / (k_offA + psi * k_onP)
         d_a = D_A / k_offA / L ** 2
-        d_p = D_P / k_offP / L ** 2
+        d_p = D_P / k_offA / L ** 2
         kappa_AP = k_AP * P_tot / (psi * k_offA)
-        kappa_PA = kPA_mult * k_PA * A_tot ** 2 / (k_offP * psi ** 2)
+        kappa_PA = kPA_mult * k_PA * A_tot ** 2 / (k_offA * psi ** 2)
 
         kappa_cue = 0.951  # Pre-factor "strength" of cue
         l_cue = 28.6 / L  # Length parameter for cue
@@ -238,11 +240,12 @@ def get_opt_kPA_mult(a_0_mult):
         k_PA = 2
         D_A, D_P = 0.28, 0.15
 
-        a_0, p_0 = 0.32*a_0_mult, 0.7
+        a_0 = psi * k_onA / (k_offA + psi * k_onA) * a_0_mult
+        p_0 = psi * k_onP / (k_offA + psi * k_onP)
         d_a = D_A / k_offA / L ** 2
-        d_p = D_P / k_offP / L ** 2
+        d_p = D_P / k_offA / L ** 2
         kappa_AP = k_AP * P_tot / (psi * k_offA)
-        kappa_PA = kPA_mult * k_PA * A_tot ** 2 / (k_offP * psi ** 2)
+        kappa_PA = kPA_mult * k_PA * A_tot ** 2 / (k_offA * psi ** 2)
 
         kappa_cue = 0.951  # Pre-factor "strength" of cue
         l_cue = 28.6 / L  # Length parameter for cue
@@ -298,11 +301,12 @@ def get_polarity_at_24hr(a_0_mult=2, k_PA_mult = 1,k_conversion=5e-3,kPA_mult=1)
     k_PA = 2
     D_A, D_P = 0.28, 0.15
 
-    a_0, p_0 = 0.32 * a_0_mult, 0.7
+    a_0 = psi * k_onA / (k_offA + psi * k_onA) * a_0_mult
+    p_0 = psi * k_onP / (k_offA + psi * k_onP)
     d_a = D_A / k_offA / L ** 2
-    d_p = D_P / k_offP / L ** 2
+    d_p = D_P / k_offA / L ** 2
     kappa_AP = k_AP * P_tot / (psi * k_offA)
-    kappa_PA = k_PA_mult * k_PA * A_tot ** 2 / (k_offP * psi ** 2)
+    kappa_PA = k_PA_mult * k_PA * A_tot ** 2 / (k_offA * psi ** 2)
 
     kappa_cue = 0.951  # Pre-factor "strength" of cue
     l_cue = 28.6 / L  # Length parameter for cue
@@ -384,7 +388,8 @@ res = np.array([get_opt_kPA_mult(a_0_mult) for a_0_mult in a_0_mult_range])
 
 cyto_interp = interp1d(res[:,1],a_0_mult_range,fill_value="extrapolate")
 
-cyto_range = np.arange(-0.0625*2,0.55,0.0625*2) + res[2,1]
+# cyto_range = np.arange(-0.0625*2,0.55,0.0625*2) + res[2,1]
+cyto_range = np.arange(0.02,0.72,0.1) ##0.22 is the real val
 a_0_mult_range = cyto_interp(cyto_range)
 res = np.array([get_opt_kPA_mult(a_0_mult) for a_0_mult in a_0_mult_range])
 cyto_range_true = res[:,1]
@@ -410,6 +415,8 @@ pol_after_24_hrs = np.array([r[0] for r in pol_after_24_hrs_results]).reshape(KK
 init_profiles = np.array([r[2][0][::2]+r[2][0][1::2] for r in pol_after_24_hrs_results]).reshape(KK.shape + (-1,))
 fin_profiles = np.array([r[2][1][::2]+r[2][1][1::2] for r in pol_after_24_hrs_results]).reshape(KK.shape + (-1,))
 init_max = init_profiles.max(axis=-1)
+fin_max = fin_profiles.max(axis=-1)
+
 norm_init_profiles = init_profiles/np.expand_dims(init_max,2)
 norm_fin_profiles = fin_profiles/np.expand_dims(init_max,2)
 
@@ -446,13 +453,15 @@ fig, ax = plt.subplots(figsize=(4,4))
 format_ax(fig, ax)
 
 ax.plot(x,norm_init_profiles[0,1],color="grey",alpha=0.5)
-for i in range(6):
-    ax.plot(x,norm_fin_profiles[-1,i],color=sns.color_palette("crest",as_cmap=True)(i/5))
+for i in range(7):
+    ax.plot(x,norm_fin_profiles[-1,i],color=sns.color_palette("crest",as_cmap=True)(i/6),label="%.2f"%cyto_range[i])
 
 ax.set(xlim=(0.5,1),xlabel="x/L",ylabel="PAR3 concentration\nnormalised to normoxia")
 ax.set_xticks([0.5,0.75,1],labels=["0","0.25","0.5"])
 fig.show()
 fig.savefig("literature_model_Figs1-3/plots/norm concentrations varying a_0.pdf")
+ax.legend()
+fig.savefig("literature_model_Figs1-3/plots/norm concentrations varying a_0 + legend.pdf")
 
 
 fig, ax = plt.subplots(figsize=(4,4))
@@ -460,12 +469,14 @@ format_ax(fig, ax)
 
 
 ax.plot(x,norm_init_profiles[0,1]/norm_init_profiles[0,1].max(),color="grey",alpha=0.5)
-for i in range(6):
-    ax.plot(x,norm_fin_profiles[-1,i]/norm_fin_profiles[-1,i].max(),color=sns.color_palette("crest",as_cmap=True)(i/5))
+for i in range(7):
+    ax.plot(x,norm_fin_profiles[-1,i]/norm_fin_profiles[-1,i].max(),color=sns.color_palette("crest",as_cmap=True)(i/6),label="%.2f"%cyto_range[i])
 ax.set(xlim=(0.5,1),xlabel="x/L",ylabel="PAR3 concentration\nnormalised")
 ax.set_xticks([0.5,0.75,1],labels=["0","0.25","0.5"])
 fig.show()
 fig.savefig("literature_model_Figs1-3/plots/norm concentrations varying a_0 normalised.pdf")
+ax.legend()
+fig.savefig("literature_model_Figs1-3/plots/norm concentrations varying a_0 normalised + legend.pdf")
 
 
 from scipy.interpolate import interp1d
@@ -473,8 +484,8 @@ from scipy.interpolate import interp1d
 
 fig, ax = plt.subplots(figsize=(4,4))
 format_ax(fig, ax)
-for i in range(6):
-    ax.plot(K_conv_range,pol_after_24_hrs[:,i],color=sns.color_palette("crest",as_cmap=True)(i/5))
+for i in range(7):
+    ax.plot(K_conv_range,pol_after_24_hrs[:,i],color=sns.color_palette("crest",as_cmap=True)(i/6))
     ax.set(xscale="log")
 
 sm = plt.cm.ScalarMappable(cmap=sns.color_palette("crest",as_cmap=True), norm=plt.Normalize(vmax=cyto_range_true[-1], vmin=cyto_range_true[0]))

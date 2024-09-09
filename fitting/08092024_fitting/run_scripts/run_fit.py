@@ -146,7 +146,8 @@ if __name__ == "__main__":
         _param_dict_KD["B_tot"] = 0
 
         _param_dict_CR1_mutant = _param_dict.copy()
-        _param_dict_CR1_mutant["kbind"] = 0
+        _param_dict_CR1_mutant["kbind_c"] = 0
+        _param_dict_CR1_mutant["kbind_m"] = 0
 
         ##Simulate CR1 mutant
         sim.initialise_param_dicts(_param_dict_CR1_mutant, _anoxia_dict)

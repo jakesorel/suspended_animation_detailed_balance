@@ -86,9 +86,9 @@ class OneDCluster(eqx.Module):
         b_load = (k_seq * b0 + k_onB_c * B_cyto) * (jnp.expand_dims(i, 1) * p - _b)
         b_unload = (k_rel + k_offB_c) * _b
 
-        K_plus_i = jnp.expand_dims(kbind_c * (i / i0) ** (1 / 3) * (i >= i0) + kbind_m * (i < i0), 1) * jnp.ones((1, 2))
+        K_plus_i = jnp.expand_dims(kbind_c * (i / i0) ** (1 / 3) * (i >= i0) + i*kbind_m * (i < i0), 1) * jnp.ones((1, 2))
         K_plus_im1 = jnp.concatenate((jnp.array(((0., 0.),)), K_plus_i[:-1]))
-        k_minus_i = jnp.expand_dims(k_offB_c * (i > i0) + k_offB_f * (i <= i0) * (i > 1), 1) * jnp.ones((1, 2))
+        k_minus_i = jnp.expand_dims(k_offB_c * (i > i0)*i + k_offB_f * (i <= i0) * (i > 1) * i, 1) * jnp.ones((1, 2))
         k_minus_i_inc_active = k_minus_i + k_AP_p
         k_minus_ip1_inc_active = jnp.concatenate((k_minus_i_inc_active[1:], (jnp.array(((0., 0.),)))))
 
