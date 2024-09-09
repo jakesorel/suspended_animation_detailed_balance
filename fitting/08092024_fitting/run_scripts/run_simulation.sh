@@ -2,7 +2,7 @@
 
 #Submit this script with: sbatch thefilename
 
-#SBATCH --time=1-23:59:00   # walltime
+#SBATCH --time=23:59:00   # walltime
 #SBATCH -J "SA_simulations"   # job name
 #SBATCH -n 1
 #SBATCH --partition=ncpu
