@@ -233,7 +233,7 @@ if __name__ == "__main__":
 
         cost_weighting = {"ASI": 10,
                           "CR1_membrane_frac":1,
-                         "B_bound_frac":1,
+                         "B_bound_frac":0.,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":1,
