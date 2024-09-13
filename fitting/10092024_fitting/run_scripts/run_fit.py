@@ -258,6 +258,7 @@ if __name__ == "__main__":
                           "postNEBD_g4": 4.
         }
 
+
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
         cost = cost_weighted.sum()
 
