@@ -190,9 +190,15 @@ if __name__ == "__main__":
         postNEBD_membrane_frac = sim_values_postNEBD["A_membrane_frac"][-1]
         surface_area = 4415.84
         N_clusters = surface_area*sim_values_pre_polarisation["p_t"][_param_dict["i0"]:,:,-1].sum(axis=0).mean(axis=0) #Cluster is defined as an oligomer greater than critical level
-        polarisation_g4 = sim_values_polarisation["p_t"][4:,:,-1].sum()/sim_values_polarisation["p_t"][:,:,-1].sum()
-        postNEBD_g4 = sim_values_postNEBD["p_t"][4:,:,-1].sum()/sim_values_postNEBD["p_t"][:,:,-1].sum()
+        polarisation_g4 = sim_values_polarisation["p_t"][4:,:,-1].sum()/sim_values_polarisation["p_t"][:,:,-1].sum()*preNEBD_membrane_frac
+        postNEBD_g4 = sim_values_postNEBD["p_t"][4:,:,-1].sum()/sim_values_postNEBD["p_t"][:,:,-1].sum()*postNEBD_membrane_frac
         mean_cluster_size = sim_values_polarisation["m_average"][0,-1]
+
+
+        """
+        
+        p_{clustered,cell} = p_{clustered,membrane}*p_{membrane}
+        """
 
         model_prediction_ground_truths \
             = {"CR1_membrane_frac":CR1_membrane_frac,
@@ -230,10 +236,10 @@ if __name__ == "__main__":
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])**2
 
         ##impose some minimum concentration
-        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD_KD["C_t"][0,-1])*5)
-        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD_KD["C_t"][0,-1])*5)
-        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD["C_t"][0,-1])*5)
-        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD["C_t"][0,-1])*5)
+        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD_KD["C_t"][0,-1]))
+        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD_KD["C_t"][0,-1]))
+        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD["C_t"][0,-1]))
+        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD["C_t"][0,-1]))
 
         ##Weight costs
 
@@ -242,14 +248,14 @@ if __name__ == "__main__":
                          "B_bound_frac":1.,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
-                           "preNEBD_membrane_frac":1,
-                           "postNEBD_membrane_frac":1,
-                          "preNEBD_minconc":1,
-                          "postNEBD_minconc": 1,
-                          "preNEBD_KD_minconc": 1,
-                          "postNEBD_KD_minconc": 1,
-                          "polarisation_g4": 10.,
-                          "postNEBD_g4": 10.
+                           "preNEBD_membrane_frac":4.,
+                           "postNEBD_membrane_frac":4.,
+                          "preNEBD_minconc":0.1,
+                          "postNEBD_minconc": 0.1,
+                          "preNEBD_KD_minconc": 0.1,
+                          "postNEBD_KD_minconc": 0.1,
+                          "polarisation_g4": 4.,
+                          "postNEBD_g4": 4.
         }
 
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
