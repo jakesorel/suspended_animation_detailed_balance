@@ -95,6 +95,7 @@ if __name__ == "__main__":
                   "tau_NEBD":60,
                   "tau_anox":600}
 
+
     anoxia_dict = {"k_rel_multiplier": 1.0,
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
@@ -189,6 +190,9 @@ if __name__ == "__main__":
         postNEBD_membrane_frac = sim_values_postNEBD["A_membrane_frac"][-1]
         surface_area = 4415.84
         N_clusters = surface_area*sim_values_pre_polarisation["p_t"][_param_dict["i0"]:,:,-1].sum(axis=0).mean(axis=0) #Cluster is defined as an oligomer greater than critical level
+        polarisation_g4 = sim_values_polarisation["p_t"][4:,:,-1].sum()/sim_values_polarisation["p_t"][:,:,-1].sum()
+        postNEBD_g4 = sim_values_postNEBD["p_t"][4:,:,-1].sum()/sim_values_postNEBD["p_t"][:,:,-1].sum()
+        mean_cluster_size = sim_values_polarisation["m_average"][0,-1]
 
         model_prediction_ground_truths \
             = {"CR1_membrane_frac":CR1_membrane_frac,
@@ -197,8 +201,9 @@ if __name__ == "__main__":
             "postNEBD_cluster_size_fold_increase":postNEBD_cluster_size_fold_increase,
                "preNEBD_membrane_frac":preNEBD_membrane_frac,
                "postNEBD_membrane_frac":postNEBD_membrane_frac,
-               "N_clusters":N_clusters
-            }
+               "polarisation_g4":polarisation_g4,
+               "postNEBD_g4": postNEBD_g4
+               }
 
         ground_truths \
             = {"CR1_membrane_frac":0.05,
@@ -207,8 +212,9 @@ if __name__ == "__main__":
             "postNEBD_cluster_size_fold_increase":4.,
                "preNEBD_membrane_frac":0.3,
                "postNEBD_membrane_frac":0.15,
-               "N_clusters":400
-            }
+               "polarisation_g4": 8.6 / 100,
+               "postNEBD_g4": 0.4 / 100,
+               }
 
         ##Assemble costs
         cost_dict = {}
@@ -233,16 +239,17 @@ if __name__ == "__main__":
 
         cost_weighting = {"ASI": 10,
                           "CR1_membrane_frac":1,
-                         "B_bound_frac":0.,
+                         "B_bound_frac":1.,
                          "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":1,
                            "postNEBD_membrane_frac":1,
-                           "N_clusters":1/ground_truths["N_clusters"]**2,
                           "preNEBD_minconc":1,
                           "postNEBD_minconc": 1,
                           "preNEBD_KD_minconc": 1,
                           "postNEBD_KD_minconc": 1,
+                          "polarisation_g4": 10.,
+                          "postNEBD_g4": 10.
         }
 
         cost_weighted = np.array([cost_weighting[key]*cost_dict[key] for key in cost_weighting.keys()])
@@ -309,14 +316,14 @@ if __name__ == "__main__":
     
     """
 
-    log10_fit_param_lims = {'k_onA':[-3,1],
+    log10_fit_param_lims = {'k_onA':[-2,0],
                           'k_onB_c':[-3,2],
                           'kbind_c':[-np.infty,np.infty],
                           'kbind_m': [-np.infty, np.infty],
-                          'k_rel':[-np.infty,np.infty],
+                          'k_rel':[-np.infy,np.infty],
                           'k_seq_multiplier':[0,3], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-3,0],
-                            "tau_anox":[0,4]}
+                            "tau_anox":[1,3]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key,val in log10_fit_param_lims_init.items():
         mn, mx = val

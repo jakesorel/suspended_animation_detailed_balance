@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
-    df = pd.read_csv("fitting/27072024_fitting/data/ASI_normalised.csv", index_col=0)
+    df = pd.read_csv("fitting/10092024_fitting/data/ASI_normalised.csv", index_col=0)
 
     t_span_data = np.arange(0, 62., 2.)
     t_span_data_used = np.arange(0, 60., 2.)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                        "tau_anox"]
 
-    log10_fit_params = pd.read_csv("fitting/27072024_fitting/fit_results/opt_param.csv")
+    log10_fit_params = pd.read_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
     log10_fit_params = log10_fit_params[fit_param_names].values.ravel()
 
     _param_dict = param_dict.copy()
@@ -133,7 +133,8 @@ if __name__ == "__main__":
     _param_dict_KD["B_tot"] = 0
 
     _param_dict_CR1_mutant = _param_dict.copy()
-    _param_dict_CR1_mutant["kbind"] = 0
+    _param_dict_CR1_mutant["kbind_m"] = 0
+    _param_dict_CR1_mutant["kbind_c"] = 0
 
     ##Simulate CR1 mutant
     sim.initialise_param_dicts(_param_dict_CR1_mutant, _anoxia_dict)
@@ -187,7 +188,9 @@ if __name__ == "__main__":
     ax[1].set(xlabel="Time (min)")
     for axx in ax:
         axx.set(xlim=(0,58))
-    fig.savefig("fitting/27072024_fitting/plots/fit.pdf")
+    fig.show()
+
+    fig.savefig("fitting/10092024_fitting/plots/fit.pdf")
 
     ##Plot the cluster distribution
 
@@ -217,8 +220,8 @@ if __name__ == "__main__":
                                      sim_values_anoxia_postNEBD_KD],
                             ["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"]):
         im = sim_i["p_t"][:,:,:361]*np.expand_dims(np.arange(1,257),axis=(1,2))
-        if np.percentile(im,99.9) > max_val:
-            max_val = np.percentile(im,99.9)
+        if np.percentile(im,98) > max_val:
+            max_val = np.percentile(im,98)
     fig, ax = plt.subplots(2,2)
     for axx, sim_i, nm in zip(ax.ravel(), [sim_values_anoxia_preNEBD,
                                            sim_values_anoxia_postNEBD,
@@ -226,10 +229,12 @@ if __name__ == "__main__":
                                            sim_values_anoxia_postNEBD_KD],
                               ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
         im = sim_i["p_t"][:, 0, :361] * np.expand_dims(np.arange(1, 257), 1)
-        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,100))
-        axx.imshow(np.flip(im[:100],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,255))
+        axx.imshow(np.flip(im[:255],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
         axx.set(ylabel=nm)
-    fig.savefig("fitting/27072024_fitting/plots/aPAR anterior protein distribution.pdf")
+    fig.show()
+
+    fig.savefig("fitting/10092024_fitting/plots/aPAR anterior protein distribution.pdf")
 
     fig, ax = plt.subplots(2,2)
     for axx, sim_i, nm in zip(ax.ravel(), [sim_values_anoxia_preNEBD,
@@ -241,8 +246,8 @@ if __name__ == "__main__":
         extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,100))
         axx.imshow(np.flip(im[:100],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
         axx.set(ylabel=nm)
-
-    fig.savefig("fitting/27072024_fitting/plots/aPAR posterior protein distribution.pdf")
+    fig.show()
+    fig.savefig("fitting/10092024_fitting/plots/aPAR posterior protein distribution.pdf")
 
     fig, ax = plt.subplots(figsize=(4,4))
 

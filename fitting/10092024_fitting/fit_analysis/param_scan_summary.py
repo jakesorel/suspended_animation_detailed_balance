@@ -5,10 +5,20 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib
+import os
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+plt.rc('font', family='Helvetica Neue')
 
-df_cost = pd.read_csv("fitting/27072024_fitting/fit_results/cost_concatenated.csv",header=None)
-df_cost_dict = pd.read_csv("fitting/27072024_fitting/fit_results/cost_dict_concatenated.csv",header=None)
-df_params = pd.read_csv("fitting/27072024_fitting/fit_results/opt_param_concatenated.csv",header=None)
+def format_ax(fig, ax):
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.8, top=0.8)
+    ax.spines[['right', 'top']].set_visible(False)
+    ax.legend(frameon=False)
+
+df_cost = pd.read_csv("fitting/10092024_fitting/fit_results/cost_concatenated.csv",header=None)
+df_cost_dict = pd.read_csv("fitting/10092024_fitting/fit_results/cost_dict_concatenated.csv",header=None)
+df_params = pd.read_csv("fitting/10092024_fitting/fit_results/opt_param_concatenated.csv",header=None)
 
 df_cost.columns = ["index","cost"]
 df_cost.index = [int(idx.split("/")[1].split(".txt")[0]) for idx in df_cost["index"]]
@@ -32,9 +42,50 @@ df_params = df_params.sort_index()
 
 #####
 
-df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<2.3]]
+df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<2]]
 # df_params_opt["cost"] = df_cost.loc[df_cost.index[np.log10(df_cost["cost"])<0.5]]["cost"]
 
+
+i = df_cost.index[df_cost["cost"]==df_cost["cost"].min()]
+
+cost_dict = dict(df_cost_dict.iloc[i])
+
+ground_truths \
+    = {"CR1_membrane_frac": 0.05,
+       "B_bound_frac": 0.2,
+       "preNEBD_cluster_size_fold_increase": 2.,
+       "postNEBD_cluster_size_fold_increase": 4.,
+       "preNEBD_membrane_frac": 0.3,
+       "postNEBD_membrane_frac": 0.15,
+       "N_clusters": 400
+       }
+
+cost_weighting = {"ASI": 10,
+                  "CR1_membrane_frac": 1,
+                  "B_bound_frac": 0.,
+                  "preNEBD_cluster_size_fold_increase": 1 / ground_truths["preNEBD_cluster_size_fold_increase"] ** 2,
+                  "postNEBD_cluster_size_fold_increase": 1 / ground_truths["postNEBD_cluster_size_fold_increase"] ** 2,
+                  "preNEBD_membrane_frac": 1,
+                  "postNEBD_membrane_frac": 1,
+                  "N_clusters": 1 / ground_truths["N_clusters"] ** 2,
+                  "preNEBD_minconc": 1,
+                  "postNEBD_minconc": 1,
+                  "preNEBD_KD_minconc": 1,
+                  "postNEBD_KD_minconc": 1,
+                  }
+
+def get_cost(i):
+    cost_dict = dict(df_cost_dict.loc[i])
+    cost_weighted = np.array([cost_weighting[key] * cost_dict[key] for key in cost_weighting.keys()])
+    cost = cost_weighted.sum()
+    return cost
+
+costs_recalculated = []
+for i in df_cost_dict.index:
+    costs_recalculated += [get_cost(i)]
+
+
+costs_recalculated = np.array([get_cost(i) for i in range(5000)])
 
 log10_fit_param_lims = {'k_onA': [-3, 1],
                         'k_onB_c': [-3, 2],
@@ -57,7 +108,7 @@ fig, ax = plt.subplots(1,df_params_opt.shape[1],figsize=(15,3))
 for i, key in enumerate(df_params_opt.columns):
     axj = ax[i].twinx()
     kde1 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=np.percentile(df_cost["cost"],80)]][key],color="grey",fill=True,ax=ax[i])
-    kde2 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=sorted(list(df_cost["cost"]))[100]]][key],color="magenta",fill=True,ax=axj)
+    kde2 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=sorted(list(df_cost["cost"]))[20]]][key],color="magenta",fill=True,ax=axj)
     ylim1 = ax[i].get_ylim()
     ylim2 = axj.get_ylim()
     ax[i].plot(log10_fit_param_lims_init[key],(0,0),lw=3,color="black")
@@ -104,6 +155,6 @@ plt.show()
 sns.pairplot(df_params_opt)
 plt.show()
 
-df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==df_cost["cost"].min()]]
-df_params_best.to_csv("fitting/27072024_fitting/fit_results/opt_param.csv")
+df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[1]]]
+df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
 
