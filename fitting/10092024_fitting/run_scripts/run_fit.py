@@ -320,7 +320,7 @@ if __name__ == "__main__":
                           'k_onB_c':[-3,2],
                           'kbind_c':[-np.infty,np.infty],
                           'kbind_m': [-np.infty, np.infty],
-                          'k_rel':[-np.infy,np.infty],
+                          'k_rel':[-np.infty,np.infty],
                           'k_seq_multiplier':[0,3], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-3,0],
                             "tau_anox":[1,3]}
