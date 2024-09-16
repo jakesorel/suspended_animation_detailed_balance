@@ -28,7 +28,7 @@ df_cost = df_cost.sort_index()
 fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                    "tau_anox"]
 
-cost_dict_columns = "ASI,CR1_membrane_frac,B_bound_frac,preNEBD_cluster_size_fold_increase,postNEBD_cluster_size_fold_increase,preNEBD_membrane_frac,postNEBD_membrane_frac,N_clusters,preNEBD_KD_minconc,postNEBD_KD_minconc,preNEBD_minconc,postNEBD_minconc".split(",")
+cost_dict_columns = ['ASI', 'CR1_membrane_frac', 'B_bound_frac', 'preNEBD_cluster_size_fold_increase', 'postNEBD_cluster_size_fold_increase', 'preNEBD_membrane_frac', 'postNEBD_membrane_frac', 'preNEBD_minconc', 'postNEBD_minconc', 'preNEBD_KD_minconc', 'postNEBD_KD_minconc', 'polarisation_g4', 'postNEBD_g4']
 
 df_cost_dict.columns = ["index"] + cost_dict_columns
 df_cost_dict.index = [int(idx.split("/")[1].split(".txt")[0]) for idx in df_cost_dict["index"]]
@@ -57,22 +57,25 @@ ground_truths \
        "postNEBD_cluster_size_fold_increase": 4.,
        "preNEBD_membrane_frac": 0.3,
        "postNEBD_membrane_frac": 0.15,
-       "N_clusters": 400
+       "polarisation_g4": 8.6 / 100,
+       "postNEBD_g4": 0.4 / 100,
        }
 
 cost_weighting = {"ASI": 10,
                   "CR1_membrane_frac": 1,
-                  "B_bound_frac": 0.,
+                  "B_bound_frac": 1.,
                   "preNEBD_cluster_size_fold_increase": 1 / ground_truths["preNEBD_cluster_size_fold_increase"] ** 2,
                   "postNEBD_cluster_size_fold_increase": 1 / ground_truths["postNEBD_cluster_size_fold_increase"] ** 2,
-                  "preNEBD_membrane_frac": 1,
-                  "postNEBD_membrane_frac": 1,
-                  "N_clusters": 1 / ground_truths["N_clusters"] ** 2,
-                  "preNEBD_minconc": 1,
-                  "postNEBD_minconc": 1,
-                  "preNEBD_KD_minconc": 1,
-                  "postNEBD_KD_minconc": 1,
+                  "preNEBD_membrane_frac": 4.,
+                  "postNEBD_membrane_frac": 4.,
+                  "preNEBD_minconc": 0.1,
+                  "postNEBD_minconc": 0.1,
+                  "preNEBD_KD_minconc": 0.1,
+                  "postNEBD_KD_minconc": 0.1,
+                  "polarisation_g4": 4.,
+                  "postNEBD_g4": 4.
                   }
+
 
 def get_cost(i):
     cost_dict = dict(df_cost_dict.loc[i])
@@ -155,6 +158,6 @@ plt.show()
 sns.pairplot(df_params_opt)
 plt.show()
 
-df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[1]]]
+df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[0]]]
 df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
 

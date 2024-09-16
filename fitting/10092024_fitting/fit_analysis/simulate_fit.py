@@ -86,7 +86,7 @@ if __name__ == "__main__":
     t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
-                   'anoxia': {"dt": 10, "tfin": 3720.*10}}
+                   'anoxia': {"dt": 10, "tfin": 3720.}}
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                                      sim_values_anoxia_preNEBD_KD,
                                      sim_values_anoxia_postNEBD_KD],
                             ["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"]):
-        im = sim_i["p_t"][:,:,:361]*np.expand_dims(np.arange(1,257),axis=(1,2))
+        im = sim_i["p_t"][:,:,:361]*np.expand_dims(np.arange(1,129),axis=(1,2))
         if np.percentile(im,98) > max_val:
             max_val = np.percentile(im,98)
     fig, ax = plt.subplots(2,2)
@@ -228,8 +228,8 @@ if __name__ == "__main__":
                                            sim_values_anoxia_preNEBD_KD,
                                            sim_values_anoxia_postNEBD_KD],
                               ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
-        im = sim_i["p_t"][:, 0, :361] * np.expand_dims(np.arange(1, 257), 1)
-        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,255))
+        im = sim_i["p_t"][:, 0, :361] * np.expand_dims(np.arange(1, 129), 1)
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,120))
         axx.imshow(np.flip(im[:255],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
         axx.set(ylabel=nm)
     fig.show()
@@ -242,8 +242,8 @@ if __name__ == "__main__":
                                            sim_values_anoxia_preNEBD_KD,
                                            sim_values_anoxia_postNEBD_KD],
                               ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
-        im = sim_i["p_t"][:, 1, :361] * np.expand_dims(np.arange(1, 257), 1)
-        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,100))
+        im = sim_i["p_t"][:, 1, :361] * np.expand_dims(np.arange(1, 129), 1)
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,129))
         axx.imshow(np.flip(im[:100],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
         axx.set(ylabel=nm)
     fig.show()

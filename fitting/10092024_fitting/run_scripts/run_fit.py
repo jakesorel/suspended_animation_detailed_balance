@@ -23,6 +23,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 import pickle
 import gzip
+from scipy.special import erf
 from scipy.interpolate import splrep, BSpline
 
 # import warnings
@@ -227,7 +228,7 @@ if __name__ == "__main__":
 
         # cost_dict["AnteriorConc"] = np.nanmean(np.abs((_df["MeanMembAntNorm_model"] - _df["MeanMembAntNorm"])))
         # cost_dict["PosteriorConc"] = np.nanmean(np.abs((_df["MeanMembPostNorm_model"] - _df["MeanMembPostNorm"])))
-        cost_dict["ASI"] =np.nansum(np.array([np.abs(c_pol[:-12:12] - asi_norm.reshape(4,-1)[i])**2 for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
+        cost_dict["ASI"] = np.nansum(np.array([np.abs(c_pol[:-12:12] - asi_norm.reshape(4,-1)[i])**2 for i, c_pol in enumerate([polarity_preNEBD["C_pol"],
                         polarity_postNEBD["C_pol"],
                         polarity_preNEBD_KD["C_pol"],
                         polarity_postNEBD_KD["C_pol"]])]))
@@ -240,6 +241,14 @@ if __name__ == "__main__":
         cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD_KD["C_t"][0,-1]))
         cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD["C_t"][0,-1]))
         cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD["C_t"][0,-1]))
+        p = sim_values_polarisation["p_t"][:,0,-1]
+        cost_dict["cluster_size_regularisation_preNEBD"] =((erf((np.arange(1,_param_dict["n_clust"]+1)-70)/10)+1)/2 * p/p.sum()).sum()
+        p = sim_values_postNEBD["p_t"][:,0,-1]
+        cost_dict["cluster_size_regularisation_postNEBD"] =((erf((np.arange(1,_param_dict["n_clust"]+1)-70)/10)+1)/2 * p/p.sum()).sum()
+        p = sim_values_polarisation_KD["p_t"][:,0,-1]
+        cost_dict["cluster_size_regularisation_preNEBD_KD"] =((erf((np.arange(1,_param_dict["n_clust"]+1)-70)/10)+1)/2 * p/p.sum()).sum()
+        p = sim_values_postNEBD_KD["p_t"][:,0,-1]
+        cost_dict["cluster_size_regularisation_postNEBD_KD"] =((erf((np.arange(1,_param_dict["n_clust"]+1)-70)/10)+1)/2 * p/p.sum()).sum()
 
         ##Weight costs
 
@@ -255,7 +264,12 @@ if __name__ == "__main__":
                           "preNEBD_KD_minconc": 0.1,
                           "postNEBD_KD_minconc": 0.1,
                           "polarisation_g4": 4.,
-                          "postNEBD_g4": 4.
+                          "postNEBD_g4": 4.,
+                          "cluster_size_regularisation_preNEBD":4,
+                          "cluster_size_regularisation_postNEBD":4,
+                          "cluster_size_regularisation_preNEBD_KD":4,
+                          "cluster_size_regularisation_postNEBD_KD":4
+
         }
 
 
