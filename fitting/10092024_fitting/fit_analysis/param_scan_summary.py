@@ -28,7 +28,7 @@ df_cost = df_cost.sort_index()
 fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                    "tau_anox"]
 
-cost_dict_columns = ['ASI', 'CR1_membrane_frac', 'B_bound_frac', 'preNEBD_cluster_size_fold_increase', 'postNEBD_cluster_size_fold_increase', 'preNEBD_membrane_frac', 'postNEBD_membrane_frac', 'preNEBD_minconc', 'postNEBD_minconc', 'preNEBD_KD_minconc', 'postNEBD_KD_minconc', 'polarisation_g4', 'postNEBD_g4']
+cost_dict_columns = ['ASI', 'CR1_membrane_frac', 'B_bound_frac', 'preNEBD_cluster_size_fold_increase', 'postNEBD_cluster_size_fold_increase', 'preNEBD_membrane_frac', 'postNEBD_membrane_frac', 'polarisation_g4', 'postNEBD_g4', 'preNEBD_KD_minconc', 'postNEBD_KD_minconc', 'preNEBD_minconc', 'postNEBD_minconc', 'cluster_size_regularisation_preNEBD', 'cluster_size_regularisation_postNEBD', 'cluster_size_regularisation_preNEBD_KD', 'cluster_size_regularisation_postNEBD_KD']
 
 df_cost_dict.columns = ["index"] + cost_dict_columns
 df_cost_dict.index = [int(idx.split("/")[1].split(".txt")[0]) for idx in df_cost_dict["index"]]
@@ -40,9 +40,16 @@ df_params.index = [int(idx.split("/")[1].split(".txt")[0]) for idx in df_params[
 df_params = df_params.drop("index",axis=1)
 df_params = df_params.sort_index()
 
+indices = [set(list(dfi.index)) for dfi in [df_cost_dict,df_params,df_cost]]
+shared_idx = list(indices[0].intersection(indices[1].intersection(indices[2])))
+
+df_cost_dict = df_cost_dict.loc[shared_idx]
+df_cost = df_cost.loc[shared_idx]
+df_params = df_params.loc[shared_idx]
+
 #####
 
-df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<2]]
+df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<3.3]]
 # df_params_opt["cost"] = df_cost.loc[df_cost.index[np.log10(df_cost["cost"])<0.5]]["cost"]
 
 
@@ -73,7 +80,12 @@ cost_weighting = {"ASI": 10,
                   "preNEBD_KD_minconc": 0.1,
                   "postNEBD_KD_minconc": 0.1,
                   "polarisation_g4": 4.,
-                  "postNEBD_g4": 4.
+                  "postNEBD_g4": 4.,
+                  "cluster_size_regularisation_preNEBD": 4,
+                  "cluster_size_regularisation_postNEBD": 4,
+                  "cluster_size_regularisation_preNEBD_KD": 4,
+                  "cluster_size_regularisation_postNEBD_KD": 4
+
                   }
 
 
@@ -88,7 +100,6 @@ for i in df_cost_dict.index:
     costs_recalculated += [get_cost(i)]
 
 
-costs_recalculated = np.array([get_cost(i) for i in range(5000)])
 
 log10_fit_param_lims = {'k_onA': [-3, 1],
                         'k_onB_c': [-3, 2],

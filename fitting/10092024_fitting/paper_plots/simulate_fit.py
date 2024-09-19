@@ -121,7 +121,7 @@ if __name__ == "__main__":
             _param_dict[nm] = 10.0 ** (log10_fit_params[i])
         else:
             _anoxia_dict[nm] = 10.0 ** (log10_fit_params[i])
-    _anoxia_dict["kunbind_anoxia"] = 1/30
+    # _anoxia_dict["kunbind_anoxia"] = 1/30
 
     # _anoxia_dict["kunbind_anoxia"] = 1/30
     # _anoxia_dict["k_rel_multiplier"] = 1.
@@ -257,16 +257,16 @@ if __name__ == "__main__":
 
     cbar.set_label('PAR3 mass concentration')
 
-    fig.savefig("fitting/27072024_fitting/plots/colorbar protein distribution.pdf")
+    fig.savefig("fitting/10092024_fitting/plots/colorbar protein distribution.pdf")
 
     ### plot other features
-#,
-         #                                  sim_values_anoxia_postNEBD_KD
+#
     fig, ax = plt.subplots(figsize=(7,4))
     fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
     for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
                                            sim_values_anoxia_postNEBD,
-                                           sim_values_anoxia_preNEBD_KD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+                                           sim_values_anoxia_preNEBD_KD,
+                                          sim_values_anoxia_postNEBD_KD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
 
         linestyle = "-"
         if i//2 == 1:
@@ -277,7 +277,24 @@ if __name__ == "__main__":
 
     ax.set(xlim=(0, 20), xlabel="Time (min)", ylabel="Cluster size")
 
-    fig.savefig("fitting/27072024_fitting/plots/cluster size.pdf")
+    fig.savefig("fitting/10092024_fitting/plots/cluster size.pdf")
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["m_average"][0], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 20), xlabel="Time (min)", ylabel="Cluster size")
+
+    fig.savefig("fitting/10092024_fitting/plots/cluster size WT.pdf")
+
 
 
     fig, ax = plt.subplots(figsize=(7,4))
@@ -296,8 +313,24 @@ if __name__ == "__main__":
 
     ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Anterior}$")
 
-    fig.savefig("fitting/27072024_fitting/plots/conc anterior.pdf")
+    fig.savefig("fitting/10092024_fitting/plots/conc anterior.pdf")
 
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["C_t"][0], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Anterior}$")
+
+    fig.savefig("fitting/10092024_fitting/plots/conc anterior WT.pdf")
 
 
     fig, ax = plt.subplots(figsize=(7,4))
@@ -316,10 +349,32 @@ if __name__ == "__main__":
 
     ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Posterior}$")
 
-    fig.savefig("fitting/27072024_fitting/plots/conc posterior.pdf")
+    fig.savefig("fitting/10092024_fitting/plots/conc posterior.pdf")
+
+
+
+    fig, ax = plt.subplots(figsize=(7,4))
+    fig.subplots_adjust(bottom=0.3, left=0.3, right=0.6, top=0.8)
+    for i, (sim_i,nm) in enumerate(zip([sim_values_anoxia_preNEBD,
+                                           sim_values_anoxia_postNEBD],["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"])):
+
+        linestyle = "-"
+        if i//2 == 1:
+            print("yes")
+            linestyle = "--"
+        ax.plot(sim.t_evals["anoxia"] / 60, sim_i["C_t"][1], color = col_dict[i % 2],label=nm,linestyle=linestyle)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
+
+    ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Posterior}$")
+
+    fig.savefig("fitting/10092024_fitting/plots/conc posterior WT.pdf")
 
 
     ##Without active feedback
+    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
+                   'polarisation': {"dt": 10, "tfin": 1e3},
+                   'NEBD': {"dt": 10, "tfin": 1e3},
+                   'anoxia': {"dt": 10, "tfin": 3720.*5}}
 
     _param_dict = param_dict.copy()
     _anoxia_dict = anoxia_dict.copy()
@@ -392,7 +447,10 @@ if __name__ == "__main__":
     ax[1].set_title("aPAR (RNAi)")
     ax[1].set(xlabel="Time (min)")
     for axx in ax:
+        axx.set(xlim=(0,None))
+    fig.savefig("fitting/10092024_fitting/plots/fit_without_active_feedback longT.pdf")
+    for axx in ax:
         axx.set(xlim=(0,58))
-    fig.savefig("fitting/27072024_fitting/plots/fit_without_active_feedback.pdf")
+    fig.savefig("fitting/10092024_fitting/plots/fit_without_active_feedback shortT.pdf")
 
     ###
