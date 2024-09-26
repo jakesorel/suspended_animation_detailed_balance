@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
-    df = pd.read_csv("ASI_normalised.csv", index_col=0)
+    df = pd.read_csv("fitting/10092024_fitting/data/ASI_normalised.csv", index_col=0)
 
     t_span_data = np.arange(0, 62., 2.)
     t_span_data_used = np.arange(0, 60., 2.)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
                        "tau_anox"]
 
-    log10_fit_params = pd.read_csv("opt_param.csv")
+    log10_fit_params = pd.read_csv("fitting/k_unbind_B_tot_scan/opt_param.csv")
     log10_fit_params = log10_fit_params[fit_param_names].values.ravel()
 
     _param_dict = param_dict.copy()
@@ -139,7 +139,224 @@ if __name__ == "__main__":
     df_out = df_out.sort_index()
     df_out["C_pol_pre"].values
 
-    plt.imshow(df_out["C_pol_pre"].values.reshape(50, 50))
-    plt.imshow(df_out["C_pol_post"].values.reshape(50, 50))
-    plt.imshow(df_out["A_membrane_frac_post"].values.reshape(50, 50))
-    plt.imshow(df_out["B_membrane_frac_post"].values.reshape(50, 50))
+
+
+    fig, ax = plt.subplots(1,2)
+
+    ax[0].imshow(df_out["C_pol_pre"].values.reshape(50, 50))
+    ax[1].imshow(df_out["C_pol_post"].values.reshape(50, 50))
+    fig.show()
+
+
+    def format_contour_label(x):
+        return " " + r"$10^{%d}$" % x + "  "
+
+
+    def make_extent(x_range, y_range, xscale="linear", yscale="linear", center=True):
+        if xscale == "log":
+            x_range = np.log10(x_range)
+        if yscale == "log":
+            y_range = np.log10(y_range)
+        if center is False:
+            extent = [x_range[0], x_range[-1] + x_range[1] - x_range[0], y_range[0],
+                      y_range[-1] + y_range[1] - y_range[0]]
+        else:
+            extent = [x_range[0] - (x_range[1] - x_range[0]) / 2, x_range[-1] + (x_range[1] - x_range[0]) / 2,
+                      y_range[0] - (y_range[1] - y_range[0]) / 2, y_range[-1] + (y_range[1] - y_range[0]) / 2]
+
+        aspect = (extent[1] - extent[0]) / (extent[3] - extent[2])
+        return extent, aspect
+
+    extent,aspect = make_extent(np.log10(B_tot_range),np.log10(k_unbind_anoxia_range))
+
+    vmin = 0
+    vmax = 1
+    levels = np.arange(0,1.25,0.25)
+    fig, ax = plt.subplots(figsize=(4, 4))
+    ax.imshow(np.flip(df_out["C_pol_pre"].values.reshape(50, 50).T, axis=0), extent=extent, aspect=aspect, cmap=plt.cm.viridis, vmin=vmin,
+              vmax=vmax,interpolation="bicubic")
+    cont = ax.contour(df_out["C_pol_pre"].values.reshape(50, 50).T, extent=extent, levels=levels, cmap=plt.cm.Greys)
+    # ax.clabel(cont, levels, zorder=1000)
+    sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis, norm=plt.Normalize(vmax=vmax, vmin=vmin))
+    cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.073, aspect=12, orientation="vertical")
+    cl.set_label("Polarity after 24hr")
+    cl_ticks = [0,0.5,1]
+    cl.set_ticks(cl_ticks)
+    ax.set(xlabel=r"$B_{tot}$")
+    ax.set(ylabel=r"$k_{U}^{anoxia}$")
+    ax.scatter(np.log10(param_dict["B_tot"]),np.log10(anoxia_dict["kunbind_anoxia"]),marker=(5, 2),s=60,color="white",zorder=1000)
+    ax.annotate('', xy=(-3,np.log10(anoxia_dict["kunbind_anoxia"])), xytext=(np.log10(param_dict["B_tot"])-0.2,np.log10(anoxia_dict["kunbind_anoxia"])), arrowprops=dict(arrowstyle='->', lw=2,color="white",linestyle="--"))
+
+    xtck = np.array([-3, -1, 1])
+    ytck = np.array([-4, -3,-2, -1])
+    ax.xaxis.set_ticks(xtck)
+    ax.xaxis.set_ticklabels([r"$10^{%d}$" % i for i in xtck])
+    ax.yaxis.set_ticks(ytck)
+    ax.yaxis.set_ticklabels([r"$10^{%d}$" % i for i in ytck])
+
+    ax.set(xlim=(np.log10(B_tot_range[0]), np.log10(B_tot_range[-1])),
+           ylim=(np.log10(k_unbind_anoxia_range[0]), np.log10(k_unbind_anoxia_range[-1])))
+    fig.subplots_adjust(left=0.3, right=0.8, bottom=0.3, top=0.8)
+    fig.savefig("fitting/10092024_fitting/plots/preNEBD_param_scan.pdf")
+
+
+    vmin = 0
+    vmax = 1
+    levels = np.arange(0,1.25,0.25)
+    fig, ax = plt.subplots(figsize=(4, 4))
+    ax.imshow(np.flip(df_out["C_pol_post"].values.reshape(50, 50).T, axis=0), extent=extent, aspect=aspect, cmap=plt.cm.viridis, vmin=vmin,
+              vmax=vmax,interpolation="bicubic")
+    cont = ax.contour(df_out["C_pol_post"].values.reshape(50, 50).T, extent=extent, levels=levels, cmap=plt.cm.Greys)
+    # ax.clabel(cont, levels, zorder=1000)
+    sm = plt.cm.ScalarMappable(cmap=plt.cm.viridis, norm=plt.Normalize(vmax=vmax, vmin=vmin))
+    cl = plt.colorbar(sm, ax=ax, pad=0.05, fraction=0.073, aspect=12, orientation="vertical")
+    cl.set_label("Polarity after 24hr")
+    cl_ticks = [0,0.5,1]
+    cl.set_ticks(cl_ticks)
+    ax.set(xlabel=r"$B_{tot}$")
+    ax.set(ylabel=r"$k_{U}^{anoxia}$")
+    ax.scatter(np.log10(param_dict["B_tot"]),np.log10(anoxia_dict["kunbind_anoxia"]),marker=(5, 2),s=60,color="white",zorder=1000)
+    ax.annotate('', xy=(-3,np.log10(anoxia_dict["kunbind_anoxia"])), xytext=(np.log10(param_dict["B_tot"])-0.2,np.log10(anoxia_dict["kunbind_anoxia"])), arrowprops=dict(arrowstyle='->', lw=2,color="white",linestyle="--"))
+
+    xtck = np.array([-3, -1, 1])
+    ytck = np.array([-4, -3,-2, -1])
+    ax.xaxis.set_ticks(xtck)
+    ax.xaxis.set_ticklabels([r"$10^{%d}$" % i for i in xtck])
+    ax.yaxis.set_ticks(ytck)
+    ax.yaxis.set_ticklabels([r"$10^{%d}$" % i for i in ytck])
+
+    ax.set(xlim=(np.log10(B_tot_range[0]), np.log10(B_tot_range[-1])),
+           ylim=(np.log10(k_unbind_anoxia_range[0]), np.log10(k_unbind_anoxia_range[-1])))
+    fig.subplots_adjust(left=0.3, right=0.8, bottom=0.3, top=0.8)
+    fig.savefig("fitting/10092024_fitting/plots/postNEBD_param_scan.pdf")
+
+
+
+    ##Membrane bound
+    def get_df_out(path):
+        B_tot_range = np.logspace(-3,1,50)
+        k_unbind_anoxia_range = np.logspace(-4,-1,50)
+        BB,KK = np.meshgrid(B_tot_range,k_unbind_anoxia_range,indexing="ij")
+        BB_f, KK_f = BB.ravel(),KK.ravel()
+        df_out = pd.read_csv(path,header=None)
+        df_out.columns = ("index","none",'C_pol_pre', 'B_pol_pre', 'A_membrane_frac_pre', 'B_membrane_frac_pre',
+                        'p0_t_A_pre', 'p0_t_P_pre', ' b0_t_A_pre', ' b0_t_P_pre', ' d1_t_A_pre',
+                        ' d1_t_P_pre', ' C_t_A_pre', ' C_t_P_pre', ' B_t_A_pre', ' B_t_P_pre',
+                        ' m_average_A_pre', ' m_average_P_pre', ' b_frac_A_pre',
+                        ' b_frac_P_pre', ' d_frac_A_pre', ' d_frac_P_pre', 'C_pol_post',
+                        'B_pol_post', 'A_membrane_frac_post', 'B_membrane_frac_post',
+                        'p0_t_A_post', 'p0_t_P_post', ' b0_t_A_post', ' b0_t_P_post',
+                        ' d1_t_A_post', ' d1_t_P_post', ' C_t_A_post', ' C_t_P_post',
+                        ' B_t_A_post', ' B_t_P_post', ' m_average_A_post', ' m_average_P_post',
+                        ' b_frac_A_post', ' b_frac_P_post', ' d_frac_A_post', ' d_frac_P_post',
+                        't')
+
+        df_out["idx"] = [int(nm.split("/")[1].strip(".csv")) for nm in df_out["index"]]
+        df_out.index = df_out["idx"]
+        df_out = df_out.sort_index()
+        df_out["B_tot"] = [BB_f[i] for i in df_out["idx"]]
+        df_out["k_unbind_anoxia"] = [KK_f[i] for i in df_out["idx"]]
+        df_out["log_B_tot"] = np.log10(df_out["B_tot"])
+        df_out["log_k_unbind_anoxia"] = np.log(df_out["k_unbind_anoxia"])
+
+        df_out["F_t_A_pre"] = df_out["p0_t_A_pre"]-df_out[" d1_t_A_pre"]
+        df_out["F_t_P_pre"] = df_out["p0_t_P_pre"]-df_out[" d1_t_P_pre"]
+        df_out["F_t_A_post"] = df_out["p0_t_A_post"]-df_out[" d1_t_A_post"]
+        df_out["F_t_P_post"] = df_out["p0_t_P_post"]-df_out[" d1_t_P_post"]
+        df_out["F_frac_t_A_pre"] = df_out["F_t_A_pre"]/df_out[" C_t_A_pre"]
+        df_out["F_frac_t_P_pre"] = df_out["F_t_P_pre"]/df_out[" C_t_P_pre"]
+        df_out["F_frac_t_A_post"] = df_out["F_t_A_post"]/df_out[" C_t_A_post"]
+        df_out["F_frac_t_P_post"] = df_out["F_t_P_post"]/df_out[" C_t_P_post"]
+        return df_out
+
+
+    df_outs = [get_df_out(path) for path in ["fitting/k_unbind_B_tot_scan/t%d_concat.csv"%i for i in (0,10,60,600)]]
+
+    fig, ax = plt.subplots(2,2)
+    vmax = np.max((df_out["F_t_A_pre"].max(),df_out["F_t_P_pre"].max(),df_out["F_t_A_post"].max(),df_out["F_t_P_post"].max()))
+    ax[0,0].imshow(df_out["F_t_A_pre"].values.reshape(50, 50),vmax=vmax,vmin=0)
+    ax[0,0].set_title("A")
+    ax[0,1].set_title("P")
+    ax[0,0].set(ylabel="PRE")
+    ax[1,0].set(ylabel="POST")
+
+    ax[0,1].imshow(df_out["F_t_P_pre"].values.reshape(50, 50),vmax=vmax,vmin=0)
+    ax[1, 0].imshow(df_out["F_t_A_post"].values.reshape(50, 50),vmax=vmax,vmin=0)
+    ax[1, 1].imshow(df_out["F_t_P_post"].values.reshape(50, 50),vmax=vmax,vmin=0)
+
+    fig.show()
+
+
+
+    fig, ax = plt.subplots(2,2)
+    # vmax = np.log10(np.max((df_out["F_frac_t_A_pre"].max(),df_out["F_frac_t_P_pre"].max(),df_out["F_frac_t_A_post"].max(),df_out["F_frac_t_P_post"].max())))
+    # vmin = np.log10(np.min((df_out["F_frac_t_A_pre"].min(),df_out["F_frac_t_P_pre"].min(),df_out["F_frac_t_A_post"].min(),df_out["F_frac_t_P_post"].min())))
+    vmax = np.log10(np.max((df_out["F_frac_t_P_pre"].max(),df_out["F_frac_t_P_post"].max())))
+    vmin = np.log10(np.min((df_out["F_frac_t_P_pre"].min(),df_out["F_frac_t_P_post"].min())))
+    levels = np.linspace(vmin,vmax,4)
+
+    ax[0,0].imshow(np.log10(np.flip(df_out["F_frac_t_A_pre"].values.reshape(50, 50).T,axis=0)),vmax=vmax,vmin=vmin)
+    ax[0,0].contour(np.log10(np.flip(df_out["F_frac_t_A_pre"].values.reshape(50, 50).T,axis=0)),levels=levels,cmap=plt.cm.Reds)
+
+    ax[0,0].set_title("A")
+    ax[0,1].set_title("P")
+    ax[0,0].set(ylabel="PRE")
+    ax[1,0].set(ylabel="POST")
+
+    ax[0,1].imshow(np.log10(np.flip(df_out["F_frac_t_P_pre"].values.reshape(50, 50).T,axis=0)),vmax=vmax,vmin=vmin)
+    ax[0,1].contour(np.log10(np.flip(df_out["F_frac_t_P_pre"].values.reshape(50, 50).T,axis=0)),levels=levels,cmap=plt.cm.Reds)
+
+    ax[1, 0].imshow(np.log10(np.flip(df_out["F_frac_t_A_post"].values.reshape(50, 50).T,axis=0)),vmax=vmax,vmin=vmin)
+    ax[1, 0].contour(np.log10(np.flip(df_out["F_frac_t_A_post"].values.reshape(50, 50).T,axis=0)),levels=levels,cmap=plt.cm.Reds)
+
+    ax[1, 1].imshow(np.log10(np.flip(df_out["F_frac_t_P_post"].values.reshape(50, 50).T,axis=0)),vmax=vmax,vmin=vmin)
+    ax[1, 1].contour(np.log10(np.flip(df_out["F_frac_t_P_post"].values.reshape(50, 50).T,axis=0)),levels=levels,cmap=plt.cm.Reds)
+
+    fig.show()
+
+    fig, ax = plt.subplots()
+    # ax.scatter(np.log10(1-df_out["A_membrane_frac_pre"].ravel()), df_out["C_pol_pre"].ravel(),c=np.log10(df_out["k_unbind_anoxia"].ravel()))
+    # ax.scatter(np.log10(df_out["F_frac_t_P_pre"].ravel()), df_out["C_pol_pre"].ravel(),c="grey",alpha=0.05)
+    ax.scatter(np.log10(df_outs[3]["F_t_P_post"].ravel()), df_out["C_pol_post"].ravel(),c=np.log10(df_out["B_tot"].ravel()))
+    # ax.scatter(np.log10(df_out["F_t_P_post"].ravel()), df_out["C_pol_post"].ravel(),c=np.log10(df_out["B_tot"].ravel()))
+
+    # ax.scatter(df_out["A_membrane_frac_post"].ravel(), df_out["C_pol_post"].ravel(),c=np.log10(df_out["k_unbind_anoxia"].ravel()))
+
+    # ax.scatter(np.log10(df_out["F_frac_t_P_post"].ravel()), df_out["C_pol_post"].ravel(),c=np.log10(df_out["B_tot"].ravel()),alpha=0.3)
+
+    fig.show()
+
+    df_red = df_out[['C_pol_pre', 'B_pol_pre', 'A_membrane_frac_pre', 'B_membrane_frac_pre',
+                    'p0_t_A_pre', 'p0_t_P_pre', ' b0_t_A_pre', ' b0_t_P_pre', ' d1_t_A_pre',
+                    ' d1_t_P_pre', ' C_t_A_pre', ' C_t_P_pre', ' B_t_A_pre', ' B_t_P_pre',
+                    ' m_average_A_pre', ' m_average_P_pre', ' b_frac_A_pre',
+                    ' b_frac_P_pre', ' d_frac_A_pre', ' d_frac_P_pre', 'C_pol_post',
+                    'B_pol_post', 'A_membrane_frac_post', 'B_membrane_frac_post',
+                    'p0_t_A_post', 'p0_t_P_post', ' b0_t_A_post', ' b0_t_P_post',
+                    ' d1_t_A_post', ' d1_t_P_post', ' C_t_A_post', ' C_t_P_post',
+                    ' B_t_A_post', ' B_t_P_post', ' m_average_A_post', ' m_average_P_post',
+                    ' b_frac_A_post', ' b_frac_P_post', ' d_frac_A_post', ' d_frac_P_post',"log_B_tot","log_k_unbind_anoxia",
+                     "F_frac_t_A_pre","F_frac_t_A_post","F_frac_t_P_pre","F_frac_t_P_post",
+                     "F_t_A_pre","F_t_A_post","F_t_P_pre","F_t_P_post"]]
+
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+
+    scaler = StandardScaler().set_output(transform="pandas")
+    scaled_X_train = scaler.fit_transform(df_red)
+    transformed = PCA(n_components=2).fit_transform(scaled_X_train.values)
+    pca = PCA(n_components=2).fit(scaled_X_train.values)
+    print(np.array(df_red.columns)[np.argsort(pca.components_[0])])
+
+    fig, ax = plt.subplots()
+    ax.scatter(*transformed.T,c=df_red["A_membrane_frac_pre"])
+    fig.show()
+
+    """
+    Potential working hypothesis
+    
+    initial flux into posterior is quenched by B
+    Starting condition is different depepnding on cell cycle state. 
+    
+    """
+

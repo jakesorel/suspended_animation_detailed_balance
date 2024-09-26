@@ -237,10 +237,10 @@ if __name__ == "__main__":
             cost_dict[key] = np.abs(model_prediction_ground_truths[key]-ground_truths[key])**2
 
         ##impose some minimum concentration
-        cost_dict["preNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD_KD["C_t"][0,-1]))
-        cost_dict["postNEBD_KD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD_KD["C_t"][0,-1]))
-        cost_dict["preNEBD_minconc"] = np.exp(-(sim_values_anoxia_preNEBD["C_t"][0,-1]))
-        cost_dict["postNEBD_minconc"] = np.exp(-(sim_values_anoxia_postNEBD["C_t"][0,-1]))
+        cost_dict["preNEBD_KD_minconc"] = 0.5-0.5*erf(sim_values_anoxia_preNEBD_KD["C_t"][0].min(axis=-1)-1)
+        cost_dict["postNEBD_KD_minconc"] = 0.5-0.5*erf(sim_values_anoxia_postNEBD_KD["C_t"][0].min(axis=-1)-1)
+        cost_dict["preNEBD_minconc"] = 0.5-0.5*erf(sim_values_anoxia_preNEBD["C_t"][0].min(axis=-1)-1)
+        cost_dict["postNEBD_minconc"] = 0.5-0.5*erf(sim_values_anoxia_postNEBD["C_t"][0].min(axis=-1)-1)
         p = sim_values_polarisation["p_t"][:,0,-1]
         cost_dict["cluster_size_regularisation_preNEBD"] =((erf((np.arange(1,_param_dict["n_clust"]+1)-70)/10)+1)/2 * p/p.sum()).sum()
         p = sim_values_postNEBD["p_t"][:,0,-1]
@@ -259,10 +259,10 @@ if __name__ == "__main__":
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":4.,
                            "postNEBD_membrane_frac":4.,
-                          "preNEBD_minconc":0.1,
-                          "postNEBD_minconc": 0.1,
-                          "preNEBD_KD_minconc": 0.1,
-                          "postNEBD_KD_minconc": 0.1,
+                          "preNEBD_minconc":10,
+                          "postNEBD_minconc": 10,
+                          "preNEBD_KD_minconc": 10,
+                          "postNEBD_KD_minconc": 10,
                           "polarisation_g4": 4.,
                           "postNEBD_g4": 4.,
                           "cluster_size_regularisation_preNEBD":4,
