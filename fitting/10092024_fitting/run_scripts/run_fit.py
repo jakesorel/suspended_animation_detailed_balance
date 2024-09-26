@@ -354,7 +354,6 @@ if __name__ == "__main__":
             mx = 2
         log10_fit_param_lims_init[key] = [mn,mx]
 
-    log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
 
 
     log10_fit_params_bounds = np.array([log10_fit_param_lims[nm] for nm in fit_param_names])
@@ -364,6 +363,14 @@ if __name__ == "__main__":
               "cost_dict":None,
               "opt_param":None,
               "log_index":None}
+
+    # log10_fit_params_init = np.zeros(len(fit_param_names))
+    for i in range(1000):
+        log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
+        _run_simulation(log10_fit_params_init, logger)
+    log10_fit_params_init = logger["opt_param"]
+
+
 
     # res = None
     # n_iter = int(1e5)
