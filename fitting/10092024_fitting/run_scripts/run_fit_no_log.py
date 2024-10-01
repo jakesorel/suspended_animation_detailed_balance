@@ -111,7 +111,7 @@ if __name__ == "__main__":
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
 
-    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
+    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e3},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
                    'anoxia': {"dt": 10, "tfin": 3720.}}
@@ -255,40 +255,41 @@ if __name__ == "__main__":
         cost_dict["postNEBD_KD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD_KD["C_t"][0].min(axis=-1) - 0.25)*5)
         cost_dict["preNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_preNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
         cost_dict["postNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
-        p = sim_values_polarisation["p_t"][:, 0, -1]
+        p = sim_values_anoxia_preNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_postNEBD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_postNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_polarisation_KD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_preNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD_KD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_postNEBD_KD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_postNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD_KD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
 
         ##Weight costs
 
         cost_weighting = {"ASI": 10,
-                          "CR1_membrane_frac": 0,
-                          "B_bound_frac": 0.,
-                          "preNEBD_cluster_size_fold_increase": 0,
-                          "postNEBD_cluster_size_fold_increase": 0,
-                          "preNEBD_membrane_frac": 0.,
-                          "postNEBD_membrane_frac": 0.,
-                          "preNEBD_minconc": 0,
-                          "postNEBD_minconc": 0,
-                          "preNEBD_KD_minconc": 0,
-                          "postNEBD_KD_minconc": 0,
-                          "polarisation_g4": 0.,
-                          "postNEBD_g4": 0.,
-                          "cluster_size_regularisation_preNEBD": 0,
-                          "cluster_size_regularisation_postNEBD": 0,
-                          "cluster_size_regularisation_preNEBD_KD": 0,
-                          "cluster_size_regularisation_postNEBD_KD": 0
+                          "CR1_membrane_frac":1,
+                         "B_bound_frac":1.,
+                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
+                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
+                           "preNEBD_membrane_frac":4.,
+                           "postNEBD_membrane_frac":4.,
+                          "preNEBD_minconc":10,
+                          "postNEBD_minconc": 10,
+                          "preNEBD_KD_minconc": 10,
+                          "postNEBD_KD_minconc": 10,
+                          "polarisation_g4": 4.,
+                          "postNEBD_g4": 4.,
+                          "cluster_size_regularisation_preNEBD":10.,
+                          "cluster_size_regularisation_postNEBD":10.,
+                          "cluster_size_regularisation_preNEBD_KD":10.,
+                          "cluster_size_regularisation_postNEBD_KD":10.
 
-                          }
+        }
+
 
         cost_weighted = np.array([cost_weighting[key] * cost_dict[key] for key in cost_weighting.keys()])
         cost = cost_weighted.sum()
@@ -333,7 +334,7 @@ if __name__ == "__main__":
         # f.close()
         print("COST", cost)
         print(log10_fit_params)
-        # print(pd.DataFrame(dict(zip(cost_dict.keys(),cost_weighted)),index=[0]).T)
+        print(pd.DataFrame(dict(zip(cost_dict.keys(),cost_weighted)),index=[0]).T)
         return cost
 
 

@@ -72,7 +72,7 @@ if __name__ == "__main__":
                   'psi': 0.174,
                   'L': 134.6,
                   'k_AP': 1e1,
-                  'n_clust': 256,
+                  'n_clust': 128,
                   'i0': 3,
                   'advection_fraction': 0.99,
                   "tau_pol": 60,
@@ -83,10 +83,10 @@ if __name__ == "__main__":
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
 
-    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
+    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e3},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
-                   'anoxia': {"dt": 10, "tfin": 3720.*5}}
+                   'anoxia': {"dt": 10, "tfin": 3720.}}
 
     sim = Simulate(param_dict, anoxia_dict, t_eval_dict)
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
                                      sim_values_anoxia_preNEBD_KD,
                                      sim_values_anoxia_postNEBD_KD],
                             ["preNEBD","postNEBD","preNEBD_KD","postNEBD_KD"]):
-        im = sim_i["p_t"][:,:,:361]*np.expand_dims(np.arange(1,257),axis=(1,2))
+        im = sim_i["p_t"][:, 0] * np.expand_dims(np.arange(1, param_dict["n_clust"]+1), 1)
         if np.percentile(im,98) > max_val:
             max_val = np.percentile(im,98)
     fig, ax = plt.subplots(2,2)
@@ -228,9 +228,9 @@ if __name__ == "__main__":
                                            sim_values_anoxia_preNEBD_KD,
                                            sim_values_anoxia_postNEBD_KD],
                               ["preNEBD", "postNEBD", "preNEBD_KD", "postNEBD_KD"]):
-        im = sim_i["p_t"][:, 0, :361] * np.expand_dims(np.arange(1, 257), 1)
-        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,257))
-        axx.imshow(np.flip(im[:255],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
+        im = sim_i["p_t"][:, 0] * np.expand_dims(np.arange(1, param_dict["n_clust"]+1), 1)
+        extent,aspect = make_extent(np.arange(0,3610,10)/60,np.arange(1,param_dict["n_clust"]+1))
+        axx.imshow(np.flip(im[:],axis=0),vmin=0,vmax=max_val,extent=extent,aspect=aspect,cmap=sns.color_palette("Spectral",as_cmap=True))
         axx.set(ylabel=nm)
     fig.show()
 

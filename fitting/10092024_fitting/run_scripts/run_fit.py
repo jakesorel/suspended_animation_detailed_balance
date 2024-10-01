@@ -95,7 +95,7 @@ if __name__ == "__main__":
                    'psi': 0.174,
                    'L': 134.6,
                    'k_AP': 1e1,
-                   'n_clust': 64,
+                   'n_clust': 80,
                     'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,
@@ -107,7 +107,7 @@ if __name__ == "__main__":
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
 
-    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 3e4},
+    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e3},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
                    'anoxia': {"dt": 10, "tfin": 3720.}}
@@ -247,16 +247,16 @@ if __name__ == "__main__":
         cost_dict["postNEBD_KD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD_KD["C_t"][0].min(axis=-1) - 0.25)*5)
         cost_dict["preNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_preNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
         cost_dict["postNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
-        p = sim_values_polarisation["p_t"][:, 0, -1]
+        p = sim_values_anoxia_preNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_postNEBD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_postNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_polarisation_KD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_preNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD_KD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
-        p = sim_values_postNEBD_KD["p_t"][:, 0, -1]
+        p = sim_values_anoxia_postNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD_KD"] = (
                     (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
 
@@ -375,7 +375,7 @@ if __name__ == "__main__":
               "log_index":None}
 
     # log10_fit_params_init = np.zeros(len(fit_param_names))
-    for i in range(1000):
+    for i in range(100):
         log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
         _run_simulation(log10_fit_params_init, logger)
     log10_fit_params_init = logger["opt_param"]
