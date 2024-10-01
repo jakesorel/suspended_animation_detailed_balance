@@ -391,7 +391,7 @@ if __name__ == "__main__":
     res = minimize(_run_simulation,
              x0,
              args=(logger,),
-             method="Nelder-Mead",
+             method="Powell",
              bounds=log10_fit_params_bounds,
              options={"return_all":True,"xatol":1e-9,"fatol":1e-9,"adaptive":True})
     print("COMPLETED")

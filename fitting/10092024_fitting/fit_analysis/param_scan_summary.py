@@ -49,7 +49,7 @@ df_params = df_params.loc[shared_idx]
 
 #####
 
-df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<3.3]]
+df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<np.percentile(df_cost["cost"],20)]]
 # df_params_opt["cost"] = df_cost.loc[df_cost.index[np.log10(df_cost["cost"])<0.5]]["cost"]
 
 
@@ -177,7 +177,7 @@ df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
 fig, ax = plt.subplots(1,df_params_opt.shape[1],figsize=(15,3))
 for i, key in enumerate(df_params_opt.columns):
     axj = ax[i].twinx()
-    kde1 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=np.percentile(df_cost["cost"],80)]][key],color="grey",fill=True,ax=ax[i])
+    kde1 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=np.percentile(df_cost["cost"],90)]][key],color="grey",fill=True,ax=ax[i])
     kde2 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=sorted(list(df_cost["cost"]))[20]]][key],color="magenta",fill=True,ax=axj)
     ylim1 = ax[i].get_ylim()
     ylim2 = axj.get_ylim()
