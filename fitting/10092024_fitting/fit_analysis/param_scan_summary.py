@@ -172,3 +172,62 @@ plt.show()
 df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[0]]]
 df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
 
+
+
+fig, ax = plt.subplots(1,df_params_opt.shape[1],figsize=(15,3))
+for i, key in enumerate(df_params_opt.columns):
+    axj = ax[i].twinx()
+    kde1 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=np.percentile(df_cost["cost"],80)]][key],color="grey",fill=True,ax=ax[i])
+    kde2 = sns.kdeplot(x=df_params.loc[df_cost.index[df_cost["cost"]<=sorted(list(df_cost["cost"]))[20]]][key],color="magenta",fill=True,ax=axj)
+    ylim1 = ax[i].get_ylim()
+    ylim2 = axj.get_ylim()
+    ax[i].plot(log10_fit_param_lims_init[key],(0,0),lw=3,color="black")
+    ax[i].scatter(log10_fit_param_lims_init[key],(0,0),color="black",s=50)
+    dx = np.diff(log10_fit_param_lims_init[key])
+    lim = log10_fit_param_lims_init[key]
+    ax[i].set(xlim=(lim[0]-dx,lim[1]+dx))
+    axj.set(xlim=(lim[0]-dx,lim[1]+dx))
+
+    ax[i].set(ylim=(-ylim1[1]*0.2,ylim1[1]))
+    axj.set(ylim=(-ylim2[1]*0.2,ylim2[1]),ylabel="")
+    format_ax(fig, ax[i])
+    format_ax(fig, axj)
+    axj.set_yticks([])
+    ax[i].set_yticks([])
+    ax[i].spines[['right', 'top',"left"]].set_visible(False)
+
+    ax[i].set(ylabel="")
+    ax[i].set_xlabel(xlabel=r"$log_{10}$"+" " + key,rotation=45,fontsize=5)
+
+for i in range(len(log10_fit_params)):
+    ax[i].scatter(log10_fit_params[i],0,color="red",s=50)
+
+fig.show()
+
+
+print(pd.DataFrame(dict(zip(df_params_opt.columns,log10_fit_params)),index=[0]).T)
+fig, ax = plt.subplots(1,df_params_opt.shape[1],figsize=(15,3))
+for i, key in enumerate(df_params_opt.columns):
+    axj = ax[i].twinx()
+    ax[i].plot(log10_fit_param_lims_init[key],(0,0),lw=3,color="black")
+    ax[i].scatter(log10_fit_param_lims_init[key],(0,0),color="black",s=10)
+    dx = np.diff(log10_fit_param_lims_init[key])
+    lim = log10_fit_param_lims_init[key]
+    ax[i].set(xlim=(lim[0]-dx,lim[1]+dx))
+    axj.set(xlim=(lim[0]-dx,lim[1]+dx))
+
+    ax[i].set(ylim=(-ylim1[1]*0.2,ylim1[1]))
+    axj.set(ylim=(-ylim2[1]*0.2,ylim2[1]),ylabel="")
+    format_ax(fig, ax[i])
+    format_ax(fig, axj)
+    axj.set_yticks([])
+    ax[i].set_yticks([])
+    ax[i].spines[['right', 'top',"left"]].set_visible(False)
+
+    ax[i].set(ylabel="")
+    ax[i].set_xlabel(xlabel=r"$log_{10}$"+" " + key,rotation=45,fontsize=5)
+
+for i in range(len(log10_fit_params)):
+    ax[i].scatter(log10_fit_params[i],0,color="red",s=10)
+
+fig.show()

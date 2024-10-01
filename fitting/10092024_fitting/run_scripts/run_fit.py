@@ -347,12 +347,12 @@ if __name__ == "__main__":
     
     """
 
-    log10_fit_param_lims = {'k_onA':[-2,0],
+    log10_fit_param_lims = {'k_onA':[-4,0],
                           'k_onB_c':[-3,2],
                           'kbind_c':[-np.infty,np.infty],
                           'kbind_m': [-np.infty, np.infty],
                           'k_rel':[-np.infty,np.infty],
-                          'k_seq_multiplier':[0,3], ##to impose the k_onBf/konB_c constraint.
+                          'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-3,0],
                             "tau_anox":[1,3]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
