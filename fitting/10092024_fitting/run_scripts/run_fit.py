@@ -103,6 +103,7 @@ if __name__ == "__main__":
                   "tau_anox":600}
 
 
+
     anoxia_dict = {"k_rel_multiplier": 1.0,
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
