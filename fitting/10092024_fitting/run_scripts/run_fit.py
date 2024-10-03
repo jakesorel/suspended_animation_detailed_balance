@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 
 
-    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox","kunbind_anoxia","B_tot"]
+    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox","kunbind_anoxia","B_tot","k_offA"]
 
     @exit_after(300)
     def run_simulation(log10_fit_params,logger):
@@ -357,7 +357,8 @@ if __name__ == "__main__":
                           'k_rel_multiplier':[-3,0],
                             "tau_anox":[1,3],
                             "kunbind_anoxia":[-3,-2],
-                            "B_tot":[0,1]}
+                            "B_tot":[0,1],
+                            "k_offA":[-0.5,0.5]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key,val in log10_fit_param_lims_init.items():
         mn, mx = val
