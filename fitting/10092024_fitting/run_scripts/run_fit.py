@@ -376,7 +376,7 @@ if __name__ == "__main__":
               "log_index":None}
 
     # log10_fit_params_init = np.zeros(len(fit_param_names))
-    for i in range(1000):
+    for i in range(50):
         log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
         _run_simulation(log10_fit_params_init, logger)
     log10_fit_params_init = logger["opt_param"]
