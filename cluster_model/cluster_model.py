@@ -7,7 +7,7 @@ from jax import jit
 from functools import partial
 import jax
 jax.config.update('jax_platform_name', 'cpu')
-
+jax.config.update("jax_enable_x64", True)
 
 
 class OneDCluster(eqx.Module):

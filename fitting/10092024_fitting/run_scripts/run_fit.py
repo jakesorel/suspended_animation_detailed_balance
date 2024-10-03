@@ -95,7 +95,7 @@ if __name__ == "__main__":
                    'psi': 0.174,
                    'L': 134.6,
                    'k_AP': 1e1,
-                   'n_clust': 80,
+                   'n_clust': 40,
                     'i0':3,
                     'advection_fraction':0.99,
                   "tau_pol":60,
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
 
 
-    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox"]
+    fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c','kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',"tau_anox","kunbind_anoxia"]
 
     @exit_after(300)
     def run_simulation(log10_fit_params,logger):
@@ -354,7 +354,8 @@ if __name__ == "__main__":
                           'k_rel':[-np.infty,np.infty],
                           'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-3,0],
-                            "tau_anox":[1,3]}
+                            "tau_anox":[1,3],
+                            "kunbind_anoxia":[-3,-2]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key,val in log10_fit_param_lims_init.items():
         mn, mx = val
@@ -375,7 +376,7 @@ if __name__ == "__main__":
               "log_index":None}
 
     # log10_fit_params_init = np.zeros(len(fit_param_names))
-    for i in range(100):
+    for i in range(1000):
         log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
         _run_simulation(log10_fit_params_init, logger)
     log10_fit_params_init = logger["opt_param"]
@@ -391,7 +392,7 @@ if __name__ == "__main__":
     res = minimize(_run_simulation,
              x0,
              args=(logger,),
-             method="Powell",
+             method="Nelder-Mead",
              bounds=log10_fit_params_bounds,
              options={"return_all":True,"xatol":1e-9,"fatol":1e-9,"adaptive":True})
     print("COMPLETED")

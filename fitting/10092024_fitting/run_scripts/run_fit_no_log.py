@@ -100,7 +100,7 @@ if __name__ == "__main__":
                   'psi': 0.174,
                   'L': 134.6,
                   'k_AP': 1e1,
-                  'n_clust': 64,
+                  'n_clust': 40,
                   'i0': 3,
                   'advection_fraction': 0.99,
                   "tau_pol": 60,
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # slurm_index = int(sys.argv[1])
     # print("Slurm index", slurm_index)
 
-    df = pd.read_csv("../data/ASI_normalised.csv", index_col=0)
+    # df = pd.read_csv("../data/ASI_normalised.csv", index_col=0)
 
     t_span_data = np.arange(0, 62., 2.)
     t_span_data_used = np.arange(0, 60., 2.)
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             asi_norm[i, j] = asi_mat[mask].mean(axis=0)
 
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
-                       "tau_anox"]
+                       "tau_anox","kunbind_anoxia"]
 
 
     @exit_after(300)
@@ -251,55 +251,58 @@ if __name__ == "__main__":
             cost_dict[key] = np.abs(model_prediction_ground_truths[key] - ground_truths[key]) ** 2
 
         ##impose some minimum concentration
-        cost_dict["preNEBD_KD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_preNEBD_KD["C_t"][0].min(axis=-1) - 0.25)*5)
-        cost_dict["postNEBD_KD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD_KD["C_t"][0].min(axis=-1) - 0.25)*5)
-        cost_dict["preNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_preNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
-        cost_dict["postNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD["C_t"][0].min(axis=-1) - 0.25)*5)
+        cost_dict["preNEBD_KD_minconc"] = 0.5 - 0.5 * erf(
+            (sim_values_anoxia_preNEBD_KD["C_t"][0].min(axis=-1) - 0.25) * 5)
+        cost_dict["postNEBD_KD_minconc"] = 0.5 - 0.5 * erf(
+            (sim_values_anoxia_postNEBD_KD["C_t"][0].min(axis=-1) - 0.25) * 5)
+        cost_dict["preNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_preNEBD["C_t"][0].min(axis=-1) - 0.25) * 5)
+        cost_dict["postNEBD_minconc"] = 0.5 - 0.5 * erf((sim_values_anoxia_postNEBD["C_t"][0].min(axis=-1) - 0.25) * 5)
         p = sim_values_anoxia_preNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD"] = (
-                    (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
+                (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
         p = sim_values_anoxia_postNEBD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD"] = (
-                    (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
+                (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
         p = sim_values_anoxia_preNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_preNEBD_KD"] = (
-                    (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
+                (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
         p = sim_values_anoxia_postNEBD_KD["p_t"][:, 0, -1]
         cost_dict["cluster_size_regularisation_postNEBD_KD"] = (
-                    (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
+                (erf((np.arange(1, _param_dict["n_clust"] + 1) - 40) / 10) + 1) / 2 * p / p.sum()).sum()
 
         ##Weight costs
 
         cost_weighting = {"ASI": 10,
-                          "CR1_membrane_frac":1,
-                         "B_bound_frac":1.,
-                         "preNEBD_cluster_size_fold_increase":1/ground_truths["preNEBD_cluster_size_fold_increase"]**2,
-                        "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
-                           "preNEBD_membrane_frac":4.,
-                           "postNEBD_membrane_frac":4.,
-                          "preNEBD_minconc":10,
+                          "CR1_membrane_frac": 1,
+                          "B_bound_frac": 1.,
+                          "preNEBD_cluster_size_fold_increase": 1 / ground_truths[
+                              "preNEBD_cluster_size_fold_increase"] ** 2,
+                          "postNEBD_cluster_size_fold_increase": 1 / ground_truths[
+                              "postNEBD_cluster_size_fold_increase"] ** 2,
+                          "preNEBD_membrane_frac": 4.,
+                          "postNEBD_membrane_frac": 4.,
+                          "preNEBD_minconc": 10,
                           "postNEBD_minconc": 10,
                           "preNEBD_KD_minconc": 10,
                           "postNEBD_KD_minconc": 10,
                           "polarisation_g4": 4.,
                           "postNEBD_g4": 4.,
-                          "cluster_size_regularisation_preNEBD":10.,
-                          "cluster_size_regularisation_postNEBD":10.,
-                          "cluster_size_regularisation_preNEBD_KD":10.,
-                          "cluster_size_regularisation_postNEBD_KD":10.
+                          "cluster_size_regularisation_preNEBD": 10.,
+                          "cluster_size_regularisation_postNEBD": 10.,
+                          "cluster_size_regularisation_preNEBD_KD": 10.,
+                          "cluster_size_regularisation_postNEBD_KD": 10.
 
-        }
-
+                          }
 
         cost_weighted = np.array([cost_weighting[key] * cost_dict[key] for key in cost_weighting.keys()])
         cost = cost_weighted.sum()
 
-        current_log = {"log10_fit_params": log10_fit_params,
-                       "cost": cost,
-                       "cost_dict": cost_dict,
-                       "cost_weighted": cost_weighted,
-                       "param_dict": _param_dict,
-                       "anoxia_dict": _anoxia_dict}
+        current_log = {"log10_fit_params":log10_fit_params,
+                       "cost":cost,
+                       "cost_dict":cost_dict,
+                       "cost_weighted":cost_weighted,
+                       "param_dict":_param_dict,
+                       "anoxia_dict":_anoxia_dict}
         logger["log"].append(current_log)
         # print(model_prediction_ground_truths)
 
@@ -308,33 +311,13 @@ if __name__ == "__main__":
         logger["cost_dict"] = logger["log"][logger["log_index"]]["cost_dict"]
         logger["lowest_cost"] = logger["costs"][logger["log_index"]]
         logger["opt_param"] = logger["log"][logger["log_index"]]["log10_fit_params"]
-        print(cost)
         if cost < logger["lowest_cost"]:
             logger["lowest_cost"] = cost
             logger["opt_param"] = log10_fit_params
-        #
-        # with gzip.open("../fit_results/logs/optim_%d.pickle.gz" % slurm_index, "wb") as f:
-        #     pickle.dump(logger["log"], f)
-        #
-        # f = open("../fit_results/current_best/cost/%d.txt" % slurm_index, "w")
-        # f.write(str(logger["lowest_cost"]) + "\n")
-        # f.close()
-        #
-        # f = open("../fit_results/current_best/cost_dict/%d.txt" % slurm_index, "w")
-        # f.write(",".join(list(logger["cost_dict"].keys())) + "\n")
-        # f.write(",".join(np.array(list(logger["cost_dict"].values())).astype(str)) + "\n")
-        # f.close()
-        #
-        # f = open("../fit_results/current_best/log_index/%d.txt" % slurm_index, "w")
-        # f.write(str(logger["log_index"]) + "\n")
-        # f.close()
-        #
-        # f = open("../fit_results/current_best/opt_param/%d.txt" % slurm_index, "w")
-        # f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
-        # f.close()
-        print("COST", cost)
-        print(log10_fit_params)
-        print(pd.DataFrame(dict(zip(cost_dict.keys(),cost_weighted)),index=[0]).T)
+
+        print(cost,log10_fit_params)
+        print(pd.DataFrame(dict(zip(cost_weighting.keys(),cost_weighted)),index=[0]).T)
+
         return cost
 
 
@@ -358,14 +341,15 @@ if __name__ == "__main__":
 
     """
 
-    log10_fit_param_lims = {'k_onA': [-2, 0],
-                            'k_onB_c': [-3, 2],
-                            'kbind_c': [-np.infty, np.infty],
-                            'kbind_m': [-np.infty, np.infty],
-                            'k_rel': [-np.infty, np.infty],
-                            'k_seq_multiplier': [0, 3],  ##to impose the k_onBf/konB_c constraint.
-                            'k_rel_multiplier': [-3, 0],
-                            "tau_anox": [1, 3]}
+    log10_fit_param_lims = {'k_onA':[-4,0],
+                          'k_onB_c':[-3,2],
+                          'kbind_c':[-np.infty,np.infty],
+                          'kbind_m': [-np.infty, np.infty],
+                          'k_rel':[-np.infty,np.infty],
+                          'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
+                          'k_rel_multiplier':[-3,0],
+                            "tau_anox":[1,3],
+                            "kunbind_anoxia":[-3,-2]}
     log10_fit_param_lims_init = log10_fit_param_lims.copy()
     for key, val in log10_fit_param_lims_init.items():
         mn, mx = val
@@ -389,6 +373,8 @@ if __name__ == "__main__":
         _run_simulation(log10_fit_params_init, logger)
     log10_fit_params_init = logger["opt_param"]
 
+
+
     # res = None
     # n_iter = int(1e5)
     lowest_cost = 1e9
@@ -398,9 +384,9 @@ if __name__ == "__main__":
     res = minimize(_run_simulation,
                    x0,
                    args=(logger,),
-                   method="Nelder-Mead",
+                   method="Powell",
                    bounds=log10_fit_params_bounds,
-                   options={"return_all": True, "maxiter":50,"adaptive": True})
+                   options={"return_all": True, "maxiter":50})
     print("COMPLETED")
     # else:
     #     res = minimize(_run_simulation,

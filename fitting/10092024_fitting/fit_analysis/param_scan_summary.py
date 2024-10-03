@@ -49,7 +49,7 @@ df_params = df_params.loc[shared_idx]
 
 #####
 
-df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<np.percentile(df_cost["cost"],20)]]
+df_params_opt = df_params.loc[df_cost.index[df_cost["cost"]<np.percentile(df_cost["cost"],5)]]
 # df_params_opt["cost"] = df_cost.loc[df_cost.index[np.log10(df_cost["cost"])<0.5]]["cost"]
 
 
@@ -101,14 +101,15 @@ for i in df_cost_dict.index:
 
 
 
-log10_fit_param_lims = {'k_onA': [-3, 1],
-                        'k_onB_c': [-3, 2],
-                        'kbind_c': [-np.infty, np.infty],
-                        'kbind_m': [-np.infty, np.infty],
-                        'k_rel': [-np.infty, np.infty],
-                        'k_seq_multiplier': [0, 3],  ##to impose the k_onBf/konB_c constraint.
-                        'k_rel_multiplier': [-3, 0],
-                        "tau_anox": [0, 4]}
+log10_fit_param_lims = {'k_onA':[-4,0],
+                      'k_onB_c':[-3,2],
+                      'kbind_c':[-np.infty,np.infty],
+                      'kbind_m': [-np.infty, np.infty],
+                      'k_rel':[-np.infty,np.infty],
+                      'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
+                      'k_rel_multiplier':[-3,0],
+                        "tau_anox":[1,3]}
+
 log10_fit_param_lims_init = log10_fit_param_lims.copy()
 for key, val in log10_fit_param_lims_init.items():
     mn, mx = val
@@ -171,6 +172,9 @@ plt.show()
 
 df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[0]]]
 df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
+
+
+cost_dict_best = df_cost_dict.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[0]]]
 
 
 

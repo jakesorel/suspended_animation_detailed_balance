@@ -143,6 +143,7 @@ if __name__ == "__main__":
 
     ##Simulate WT, from pre and postNEBD
     sim.initialise_param_dicts(_param_dict, _anoxia_dict)
+
     sim.simulate_pre_and_post()
     sim_values_pre_polarisation = sim.extract_values(sim.y_pre_polarisation).copy()
     sim_values_polarisation = sim.extract_values(sim.y_polarisation).copy()
@@ -154,6 +155,7 @@ if __name__ == "__main__":
 
     ##Simulate KD, from pre and postNEBD
     sim.initialise_param_dicts(_param_dict_KD, _anoxia_dict)
+
     sim.simulate_pre_and_post()
     sim_values_polarisation_KD = sim.extract_values(sim.y_polarisation).copy()
     sim_values_postNEBD_KD = sim.extract_values(sim.y_postNEBD).copy()
