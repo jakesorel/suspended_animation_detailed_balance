@@ -26,7 +26,7 @@ df_cost = df_cost.drop("index",axis=1)
 df_cost = df_cost.sort_index()
 
 fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
-                   "tau_anox"]
+                   "tau_anox","kunbind_anoxia"]
 
 cost_dict_columns = ['ASI', 'CR1_membrane_frac', 'B_bound_frac', 'preNEBD_cluster_size_fold_increase', 'postNEBD_cluster_size_fold_increase', 'preNEBD_membrane_frac', 'postNEBD_membrane_frac', 'polarisation_g4', 'postNEBD_g4', 'preNEBD_KD_minconc', 'postNEBD_KD_minconc', 'preNEBD_minconc', 'postNEBD_minconc', 'cluster_size_regularisation_preNEBD', 'cluster_size_regularisation_postNEBD', 'cluster_size_regularisation_preNEBD_KD', 'cluster_size_regularisation_postNEBD_KD']
 
@@ -108,7 +108,8 @@ log10_fit_param_lims = {'k_onA':[-4,0],
                       'k_rel':[-np.infty,np.infty],
                       'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                       'k_rel_multiplier':[-3,0],
-                        "tau_anox":[1,3]}
+                        "tau_anox":[1,3],
+                        "kunbind_anoxia":[-3,-2]}
 
 log10_fit_param_lims_init = log10_fit_param_lims.copy()
 for key, val in log10_fit_param_lims_init.items():

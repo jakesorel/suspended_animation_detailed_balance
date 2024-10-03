@@ -269,16 +269,16 @@ if __name__ == "__main__":
                         "postNEBD_cluster_size_fold_increase":1/ground_truths["postNEBD_cluster_size_fold_increase"]**2,
                            "preNEBD_membrane_frac":4.,
                            "postNEBD_membrane_frac":4.,
-                          "preNEBD_minconc":10,
-                          "postNEBD_minconc": 10,
-                          "preNEBD_KD_minconc": 10,
-                          "postNEBD_KD_minconc": 10,
-                          "polarisation_g4": 4.,
-                          "postNEBD_g4": 4.,
-                          "cluster_size_regularisation_preNEBD":10.,
-                          "cluster_size_regularisation_postNEBD":10.,
-                          "cluster_size_regularisation_preNEBD_KD":10.,
-                          "cluster_size_regularisation_postNEBD_KD":10.
+                          "preNEBD_minconc":3,
+                          "postNEBD_minconc": 3,
+                          "preNEBD_KD_minconc": 3,
+                          "postNEBD_KD_minconc": 3,
+                          "polarisation_g4": 0.,
+                          "postNEBD_g4": 0.,
+                          "cluster_size_regularisation_preNEBD":3.,
+                          "cluster_size_regularisation_postNEBD":3.,
+                          "cluster_size_regularisation_preNEBD_KD":3.,
+                          "cluster_size_regularisation_postNEBD_KD":3.
 
         }
 

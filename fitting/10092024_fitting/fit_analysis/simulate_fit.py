@@ -108,7 +108,7 @@ if __name__ == "__main__":
             asi_sd[i, j] = asi_mat[mask].std(axis=0)
 
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
-                       "tau_anox"]
+                       "tau_anox","kunbind_anox"]
 
     log10_fit_params = pd.read_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
     log10_fit_params = log10_fit_params[fit_param_names].values.ravel()
@@ -121,7 +121,7 @@ if __name__ == "__main__":
             _param_dict[nm] = 10.0 ** (log10_fit_params[i])
         else:
             _anoxia_dict[nm] = 10.0 ** (log10_fit_params[i])
-    _anoxia_dict["kunbind_anoxia"] = 1/30
+    # _anoxia_dict["kunbind_anoxia"] = 1/30
 
     # _anoxia_dict["kunbind_anoxia"] = 1/30
     # _anoxia_dict["k_rel_multiplier"] = 1.
