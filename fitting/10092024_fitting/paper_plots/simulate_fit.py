@@ -83,7 +83,7 @@ if __name__ == "__main__":
                    "kunbind_anoxia": 0.0042,
                    "k_AP_multiplier": 0.0}
 
-    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e3},
+    t_eval_dict = {'pre_polarisation': {"dt": 10, "tfin": 1e5},
                    'polarisation': {"dt": 10, "tfin": 1e3},
                    'NEBD': {"dt": 10, "tfin": 1e3},
                    'anoxia': {"dt": 10, "tfin": 3720.}}
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             asi_sd[i, j] = asi_mat[mask].std(axis=0)
 
     fit_param_names = ['k_onA', 'k_onB_c', 'kbind_c', 'kbind_m', 'k_rel', 'k_seq_multiplier', 'k_rel_multiplier',
-                       "tau_anox"]
+                       "tau_anox", "kunbind_anoxia", "B_tot", "k_offA"]
 
     log10_fit_params = pd.read_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
     log10_fit_params = log10_fit_params[fit_param_names].values.ravel()
@@ -121,7 +121,14 @@ if __name__ == "__main__":
             _param_dict[nm] = 10.0 ** (log10_fit_params[i])
         else:
             _anoxia_dict[nm] = 10.0 ** (log10_fit_params[i])
-    # _anoxia_dict["kunbind_anoxia"] = 1/30
+
+    ##modifications delete!
+    # _param_dict["kbind_c"] /= 10
+    # _param_dict["kbind_m"] /= 10
+    # _param_dict["k_offA"] /=3
+    # _anoxia_dict["kunbind_anoxia"] /= 10
+
+    # _param_dict["tau_anox"] = 10
 
     # _anoxia_dict["kunbind_anoxia"] = 1/30
     # _anoxia_dict["k_rel_multiplier"] = 1.
@@ -313,7 +320,7 @@ if __name__ == "__main__":
         ax.plot(sim.t_evals["anoxia"] / 60, sim_i["C_t"][0], color = col_dict[i % 2],label=nm,linestyle=linestyle)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), frameon=False)
 
-    ax.set(xlim=(0, 60), xlabel="Time (min)", ylabel=r"$[A]_{Anterior}$")
+    ax.set(xlim=(0, 10), xlabel="Time (min)", ylabel=r"$[A]_{Anterior}$")
 
     fig.savefig("fitting/10092024_fitting/plots/conc anterior.pdf")
 

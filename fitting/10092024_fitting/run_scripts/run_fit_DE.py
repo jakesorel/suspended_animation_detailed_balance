@@ -26,7 +26,7 @@ try:
 except ImportError:
     import _thread as thread
 from scipy.interpolate import interp1d
-from scipy.optimize import minimize
+from scipy.optimize import minimize,differential_evolution
 import pickle
 import gzip
 from scipy.special import erf
@@ -68,12 +68,12 @@ def mkdir(path):
 if __name__ == "__main__":
     mkdir("../fit_results")
     mkdir("../fit_results/logs")
-    mkdir("../fit_results/current_best")
-    mkdir("../fit_results/current_best/cost")
-    mkdir("../fit_results/current_best/cost_dict")
+    mkdir("../fit_results/current_best_DE")
+    mkdir("../fit_results/current_best_DE/cost")
+    mkdir("../fit_results/current_best_DE/cost_dict")
 
-    mkdir("../fit_results/current_best/log_index")
-    mkdir("../fit_results/current_best/opt_param")
+    mkdir("../fit_results/current_best_DE/log_index")
+    mkdir("../fit_results/current_best_DE/opt_param")
 
     param_dict = {'D_A': 0.2,
                   "D_B":0.28,
@@ -310,11 +310,11 @@ if __name__ == "__main__":
         # with gzip.open("../fit_results/logs/optim_%d.pickle.gz"%slurm_index, "wb") as f:
         #     pickle.dump(logger["log"], f)
 
-        f = open("../fit_results/current_best/cost/%d.txt"%slurm_index,"w")
+        f = open("../fit_results/current_best_DE/cost/%d.txt"%slurm_index,"w")
         f.write(str(logger["lowest_cost"]) + "\n")
         f.close()
 
-        f = open("../fit_results/current_best/cost_dict/%d.txt"%slurm_index,"w")
+        f = open("../fit_results/current_best_DE/cost_dict/%d.txt"%slurm_index,"w")
         f.write(",".join(list(logger["cost_dict"].keys())) + "\n")
         f.write(",".join(np.array(list(logger["cost_dict"].values())).astype(str)) + "\n")
         f.close()
@@ -323,7 +323,7 @@ if __name__ == "__main__":
         # f.write(str(logger["log_index"]) + "\n")
         # f.close()
 
-        f = open("../fit_results/current_best/opt_param/%d.txt"%slurm_index,"w")
+        f = open("../fit_results/current_best_DE/opt_param/%d.txt"%slurm_index,"w")
         f.write(",".join(list(logger["opt_param"].astype(str))) + "\n")
         f.close()
         return cost
@@ -350,23 +350,15 @@ if __name__ == "__main__":
 
     log10_fit_param_lims = {'k_onA':[-4,0],
                           'k_onB_c':[-3,2],
-                          'kbind_c':[-np.infty,np.infty],
-                          'kbind_m': [-np.infty, np.infty],
-                          'k_rel':[-np.infty,np.infty],
+                          'kbind_c':[-3,2],
+                          'kbind_m': [-3, 2],
+                          'k_rel':[-3,2],
                           'k_seq_multiplier':[0,2], ##to impose the k_onBf/konB_c constraint.
                           'k_rel_multiplier':[-3,0],
                             "tau_anox":[1,3],
                             "kunbind_anoxia":[-3,-2],
                             "B_tot":[0,1],
                             "k_offA":[-0.5,0.5]}
-    log10_fit_param_lims_init = log10_fit_param_lims.copy()
-    for key,val in log10_fit_param_lims_init.items():
-        mn, mx = val
-        if np.isinf(mn):
-            mn = -2
-        if np.isinf(mx):
-            mx = 2
-        log10_fit_param_lims_init[key] = [mn,mx]
 
 
 
@@ -378,26 +370,7 @@ if __name__ == "__main__":
               "opt_param":None,
               "log_index":None}
 
-    # log10_fit_params_init = np.zeros(len(fit_param_names))
-    for i in range(50):
-        log10_fit_params_init = np.array([np.random.uniform(*log10_fit_param_lims_init[nm]) for nm in fit_param_names])
-        _run_simulation(log10_fit_params_init, logger)
-    log10_fit_params_init = logger["opt_param"]
-
-
-
-    # res = None
-    # n_iter = int(1e5)
-    lowest_cost = 1e9
-    x0 = log10_fit_params_init
-    # for i in range(n_iter):
-    #     if res is None:
-    res = minimize(_run_simulation,
-             x0,
-             args=(logger,),
-             method="Nelder-Mead",
-             bounds=log10_fit_params_bounds,
-             options={"return_all":True,"xatol":1e-9,"fatol":1e-9,"adaptive":True})
+    res = differential_evolution(_run_simulation,log10_fit_params_bounds,init="sobol",args=(logger,),workers=-1)
     print("COMPLETED")
         # else:
         #     res = minimize(_run_simulation,
