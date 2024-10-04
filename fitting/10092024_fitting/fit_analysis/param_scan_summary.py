@@ -173,7 +173,7 @@ plt.show()
 sns.pairplot(df_params_opt)
 plt.show()
 
-df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[0]]]
+df_params_best = df_params.loc[df_cost.index[df_cost["cost"]==sorted(df_cost["cost"].values)[10]]]
 df_params_best.to_csv("fitting/10092024_fitting/fit_results/opt_param.csv")
 
 

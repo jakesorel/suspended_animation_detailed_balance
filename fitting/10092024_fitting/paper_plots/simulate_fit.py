@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # _param_dict["k_offA"] /=3
     # _anoxia_dict["kunbind_anoxia"] /= 10
 
-    # _param_dict["tau_anox"] = 10
+    # _param_dict["tau_anox"] = 200
 
     # _anoxia_dict["kunbind_anoxia"] = 1/30
     # _anoxia_dict["k_rel_multiplier"] = 1.
