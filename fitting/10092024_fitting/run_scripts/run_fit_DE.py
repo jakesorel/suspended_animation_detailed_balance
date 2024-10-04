@@ -370,7 +370,7 @@ if __name__ == "__main__":
               "opt_param":None,
               "log_index":None}
 
-    res = differential_evolution(_run_simulation,log10_fit_params_bounds,init="sobol",args=(logger,),workers=-1)
+    res = differential_evolution(_run_simulation,log10_fit_params_bounds,init="sobol",args=(logger,),workers=1,atol=1e-9,tol=1e-9)
     print("COMPLETED")
         # else:
         #     res = minimize(_run_simulation,
